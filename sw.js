@@ -1,5 +1,5 @@
 // LVL UP : cache hors-ligne. VERSION change à chaque build, ce qui installe la nouvelle version.
-const VERSION = 'lvlup-0afc4ef160';
+const VERSION = 'lvlup-9351a57fac';
 const FONTS = 'lvlup-fonts';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 

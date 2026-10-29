@@ -2023,7 +2023,7 @@ function openPlan() {
 
 /* ---------- Notifications (version installée) ---------- */
 // Les rappels quand l'app est fermée passent par le serveur Supabase (Web Push) ; dans l'app ouverte, un toast suffit.
-const PUSH_CFG = { api: '', key: 'BHYRJk58wqqfIXcKOtlWcPqnAvB-8s0euEhIAoeFZZdfAvGdR5W7Opl6iVFxM2SGX9yqiQuSUjejXzVdmh6WFPk' };
+const PUSH_CFG = { api: 'https://ffqwthgsorkvxghudtcf.supabase.co/functions/v1/lvlup-push', key: 'BHYRJk58wqqfIXcKOtlWcPqnAvB-8s0euEhIAoeFZZdfAvGdR5W7Opl6iVFxM2SGX9yqiQuSUjejXzVdmh6WFPk' };
 const NOTIF_LS = 'lvlup-notif-v1';
 const NOTIF = (() => { try { return JSON.parse(localStorage.getItem(NOTIF_LS)) || {}; } catch (e) { return {}; } })();
 function saveNotif() { try { localStorage.setItem(NOTIF_LS, JSON.stringify(NOTIF)); } catch (e) { /* stockage indisponible */ } }
