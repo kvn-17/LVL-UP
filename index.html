@@ -592,6 +592,16 @@ details.rules[open] summary .i { transform: rotate(90deg); }
 .sleep-msg { font-size: 14px; padding: 10px 14px; border-radius: var(--r-md); background: var(--cs); }
 .plan-tl { padding-top: 4px; }
 .plan-wrap { display: flex; flex-direction: column; gap: 12px; }
+.day-tag { align-self: center; display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; background: var(--cs); color: var(--c); font-size: 13px; font-weight: 700; text-align: center; }
+.daytype { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-md); background: linear-gradient(120deg, var(--cs), transparent 90%); border: 1px solid var(--line-2); }
+.daytype .dt-e { font-size: 26px; line-height: 1; flex: none; }
+.daytype .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.daytype .tx b { font-size: 15px; }
+.daytype .tx span { font-size: 13px; color: var(--muted); }
+.dt-seg, .zone-ask .seg-mini { display: flex; }
+.dt-seg button, .zone-ask .seg-mini button { flex: 1; padding: 0 6px; }
+.zone-ask { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: var(--r-md); background: var(--surface); border: 1px dashed var(--line-2); animation: rise .4s var(--ease) both; }
+.zone-ask > span { font-size: 14px; font-weight: 700; }
 .past-box { padding: 2px 14px; }
 .past-box summary { padding: 10px 0; }
 .past-box summary b { font-size: 14px; color: var(--muted); }
@@ -892,7 +902,7 @@ function defaultState() {
   const t = today();
   return {
     v: 1, updatedAt: 0, onboarded: false,
-    profile: { name: '', birth: SEED.birth, lvl: 1, sound: true, start: t, par: { f: '', m: '', sex: '' } },
+    profile: { name: '', birth: SEED.birth, lvl: 1, sound: true, start: t, par: { f: '', m: '', sex: '' }, zone: '', cours: {}, wakeSchool: '', wakeFree: '' },
     weights: [{ d: t, kg: SEED.kg }], heights: [{ d: t, cm: SEED.cm }],
     workouts: [], habits: {}, water: {}, flags: {}, xp: 0,
     games: { nose: 0, reflex: 0, quiz: 0, spins: {} }, badges: {}, asked: { w: '', h: '', b: '' }, days: {},
@@ -1023,6 +1033,66 @@ function mealLogTxt(m, L) {
   const prot = (m === 'dej' || m === 'diner') && what && !PROT.test(what) ? ' · pense aux protéines au prochain repas' : '';
   return `${where}${what ? ' : ' + what : ''}${prot}`;
 }
+
+/* ============ cours, week-ends, vacances ============ */
+// Calendrier scolaire officiel (data.education.gouv.fr), dates locales : [1er jour de vacances, jour de la reprise, nom].
+// Mis à jour en ligne tous les 20 jours (refreshVacances) ; cette copie sert hors-ligne.
+const VAC = {"A":[["2025-10-18","2025-11-03","Vacances de la Toussaint"],["2025-12-20","2026-01-05","Vacances de Noël"],["2026-02-07","2026-02-23","Vacances d'Hiver"],["2026-04-04","2026-04-20","Vacances de Printemps"],["2026-05-14","2026-05-18","Pont de l'Ascension"],["2026-07-04","2026-09-01","Vacances d'Été"],["2026-10-17","2026-11-02","Vacances de la Toussaint"],["2026-12-19","2027-01-04","Vacances de Noël"],["2027-02-13","2027-03-01","Vacances d'Hiver"],["2027-04-10","2027-04-26","Vacances de Printemps"],["2027-05-07","2027-05-08","Pont de l'Ascension"],["2027-07-03","2027-09-02","Vacances d'Été"],["2027-10-23","2027-11-08","Vacances de la Toussaint"],["2027-12-18","2028-01-03","Vacances de Noël"],["2028-02-19","2028-03-06","Vacances d'Hiver"],["2028-04-22","2028-05-09","Vacances de Printemps"],["2028-05-25","2028-05-29","Pont de l'Ascension"],["2028-07-04","2028-09-01","Vacances d'Été"]],"B":[["2025-10-18","2025-11-03","Vacances de la Toussaint"],["2025-12-20","2026-01-05","Vacances de Noël"],["2026-02-14","2026-03-02","Vacances d'Hiver"],["2026-04-11","2026-04-27","Vacances de Printemps"],["2026-05-14","2026-05-18","Pont de l'Ascension"],["2026-07-04","2026-09-01","Vacances d'Été"],["2026-10-17","2026-11-02","Vacances de la Toussaint"],["2026-12-19","2027-01-04","Vacances de Noël"],["2027-02-20","2027-03-08","Vacances d'Hiver"],["2027-04-17","2027-05-03","Vacances de Printemps"],["2027-05-07","2027-05-08","Pont de l'Ascension"],["2027-07-03","2027-09-02","Vacances d'Été"],["2027-10-23","2027-11-08","Vacances de la Toussaint"],["2027-12-18","2028-01-03","Vacances de Noël"],["2028-02-05","2028-02-21","Vacances d'Hiver"],["2028-04-08","2028-04-24","Vacances de Printemps"],["2028-05-25","2028-05-29","Pont de l'Ascension"],["2028-07-04","2028-09-01","Vacances d'Été"]],"C":[["2025-10-18","2025-11-03","Vacances de la Toussaint"],["2025-12-20","2026-01-05","Vacances de Noël"],["2026-02-21","2026-03-09","Vacances d'Hiver"],["2026-04-18","2026-05-04","Vacances de Printemps"],["2026-05-14","2026-05-18","Pont de l'Ascension"],["2026-07-04","2026-09-01","Vacances d'Été"],["2026-10-17","2026-11-02","Vacances de la Toussaint"],["2026-12-19","2027-01-04","Vacances de Noël"],["2027-02-06","2027-02-22","Vacances d'Hiver"],["2027-04-03","2027-04-19","Vacances de Printemps"],["2027-05-07","2027-05-08","Pont de l'Ascension"],["2027-07-03","2027-09-02","Vacances d'Été"],["2027-10-23","2027-11-08","Vacances de la Toussaint"],["2027-12-18","2028-01-03","Vacances de Noël"],["2028-02-12","2028-02-28","Vacances d'Hiver"],["2028-04-15","2028-05-02","Vacances de Printemps"],["2028-05-25","2028-05-29","Pont de l'Ascension"],["2028-07-04","2028-09-01","Vacances d'Été"]]};
+const VAC_LS = 'lvlup-vacances-v1';
+let VACS = VAC;
+try { const c = JSON.parse(localStorage.getItem(VAC_LS)); if (c && c.data && c.data.A && c.data.B && c.data.C) VACS = c.data; } catch (e) { /* copie intégrée */ }
+async function refreshVacances() {
+  try {
+    const c = JSON.parse(localStorage.getItem(VAC_LS) || 'null');
+    if (c && Date.now() - c.at < 20 * 864e5) return;
+    // 120 jours en arrière : couvre aussi des grandes vacances déjà commencées
+    const f = 'description,zones,start_date,end_date', since = addDays(today(), -120);
+    const q = new URLSearchParams({ select: f, group_by: f, order_by: 'start_date', limit: 100, where: `zones in ("Zone A","Zone B","Zone C") and start_date >= "${since}" and population != "Enseignants"` });
+    const rows = (await (await fetch('https://data.education.gouv.fr/api/explore/v2.1/catalog/datasets/fr-en-calendrier-scolaire/records?' + q)).json()).results || [];
+    const data = { A: [], B: [], C: [] };
+    rows.forEach(r => {
+      const Z = String(r.zones || '').slice(-1), name = String(r.description || '').replace('Début des ', '');
+      if (!data[Z] || !r.start_date || !r.end_date) return;
+      const a = keyOf(new Date(r.start_date));
+      let b = keyOf(new Date(r.end_date));
+      if (b <= a) b = /Été/.test(name) ? `${a.slice(0, 4)}-09-01` : addDays(a, 1);
+      data[Z].push([a, b, name]);
+    });
+    if (data.A.length && data.B.length && data.C.length) {
+      // les périodes plus anciennes viennent de la copie intégrée, la suite de la version en ligne
+      ['A', 'B', 'C'].forEach(Z => { data[Z] = VAC[Z].filter(p => p[0] < since).concat(data[Z]); });
+      VACS = data;
+      localStorage.setItem(VAC_LS, JSON.stringify({ at: Date.now(), data }));
+    }
+  } catch (e) { /* hors-ligne : copie intégrée */ }
+}
+// Jours fériés (Pâques : algorithme grégorien anonyme)
+function paques(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+  return keyOf(new Date(y, Math.floor((h + l - 7 * m + 114) / 31) - 1, ((h + l - 7 * m + 114) % 31) + 1));
+}
+const FERIES = { '01-01': 'Jour de l’an', '05-01': 'Fête du Travail', '05-08': 'Victoire 1945', '07-14': 'Fête nationale', '08-15': 'Assomption', '11-01': 'Toussaint', '11-11': 'Armistice', '12-25': 'Noël' };
+function ferie(key) {
+  if (FERIES[key.slice(5)]) return FERIES[key.slice(5)];
+  const p = paques(+key.slice(0, 4));
+  return { [addDays(p, 1)]: 'Lundi de Pâques', [addDays(p, 39)]: 'Ascension', [addDays(p, 50)]: 'Lundi de Pentecôte' }[key] || null;
+}
+// Type de jour : 'school' (cours), 'vac' (vacances), 'ferie' ou 'weekend'.
+// Sans zone connue, seules les vacances communes aux 3 zones comptent (maybe = une zone est en vacances).
+function dayInfo(key) {
+  const zone = ['A', 'B', 'C'].includes(S.profile.zone) ? S.profile.zone : '';
+  const hits = (zone ? [zone] : ['A', 'B', 'C']).map(Z => (VACS[Z] || []).find(p => key >= p[0] && key < p[1]));
+  if (hits.every(Boolean)) return { type: 'vac', e: '🏖️', n: hits[0][2], until: addDays(hits[0][1], -1), col: 'cyan' };
+  const f = ferie(key);
+  if (f) return { type: 'ferie', e: '🎉', n: `Férié : ${f}`, col: 'amber' };
+  const dow = parseKey(key).getDay();
+  if (dow === 0 || dow === 6) return { type: 'weekend', e: '😎', n: 'Week-end', col: 'lime' };
+  return { type: 'school', e: '🏫', n: 'Jour de cours', col: 'violet', maybe: hits.some(Boolean) };
+}
+const dayTagTxt = info => `${info.e} ${info.n}${info.until ? ` · jusqu’au ${fmtDate(info.until, { weekday: 'short', day: 'numeric', month: 'short' })}` : ''}`;
+// Horaires de cours habituels par jour de la semaine (appris dans le Bonjour) ; mercredi après-midi libre par défaut
+const coursOf = dow => (S.profile.cours && S.profile.cours[dow]) || ['08:00', dow === 3 ? '12:00' : '17:00'];
 const PLACES = ['McDo', 'KFC', 'Burger King', 'Kebab', 'Pizzeria', 'Sushi', 'Boulangerie', 'Chez des amis', 'En famille'];
 const SPORTY = /foot|basket|v[ée]lo|skate|piscine|natation|nage|judo|danse|tennis|rugby|athl|boxe|hand|course|running|roller|trott|escalade|karat|gym|badminton|volley|ping|surf|ski|rando/i;
 const FAST = /mac ?do|mcdo|mc ?donald|burger|\bbk\b|quick|five guys|kfc|kebab|tacos|pizz/i;
@@ -1082,9 +1152,10 @@ function planFor(key) {
   if (!D) return null;
   const W = toMin(D.wake), N = isNaN(toMin(D.next)) ? W : toMin(D.next);
   if (isNaN(W)) return null;
-  const slept = sleepMin(D);
-  // au lit 9 h 15 avant le réveil de demain (9 h de sommeil + le temps de s'endormir), entre 20 h 30 et 22 h 45
-  const bed = clamp(N + 1440 - 555, 1230, 1365);
+  const slept = sleepMin(D), info = dayInfo(key), tInfo = dayInfo(addDays(key, 1));
+  // au lit 9 h 15 avant le réveil de demain (9 h de sommeil + le temps de s'endormir),
+  // entre 20 h 30 et 22 h 45, ou 23 h 15 la veille d'un jour sans cours
+  const bed = clamp(N + 1440 - 555, 1230, tInfo.type === 'school' ? 1365 : 1395);
   const acts = (D.acts || []).map(a => Object.assign({}, a, { f: toMin(a.from), t: a.k === 'food' ? toMin(a.from) + 60 : toMin(a.to) })).filter(a => !isNaN(a.f) && !isNaN(a.t) && a.t > a.f);
   const busy = acts.filter(a => a.k !== 'food');
   const school = busy.find(a => a.k === 'school');
@@ -1174,7 +1245,8 @@ function planFor(key) {
   const blocks = blocksFor(false);
   const sporty = busy.filter(a => (a.k === 'club' || SPORTY.test(a.what || '')) && a.t - a.f >= 45).sort((a, b) => b.t - a.t)[0];
   const done = S.workouts.some(w => w.d === key);
-  let pid = WEEK[parseKey(key).getDay()], pref = (M.gouter ? M.gouter.t : 990) + 75, label = null;
+  // sans cours : séance en fin de matinée, l'après-midi reste libre ; jour de cours : 1 h après le goûter
+  let pid = WEEK[parseKey(key).getDay()], pref = school ? (M.gouter ? M.gouter.t : 990) + 75 : Math.max(W + 150, 630), label = null;
   if (sporty) { pid = 'posture'; pref = sporty.t + 30; label = `Étirements après ${(sporty.what || 'ton sport').trim()}`; }
   else if (pid === 'repos') pid = null;
   const lo = Math.max(W + 60, 540, pm ? pm + 15 : 0), hi = bed - 90;
@@ -1197,7 +1269,7 @@ function planFor(key) {
   add(bed, '🛏️', 'Au lit', `Réveil à ${fmtM(N)} demain : ${hTxt(N + 1440 - bed)} de nuit 🌙`, 'violet', { kind: 'night' });
 
   items.sort((a, b) => a.t - b.t);
-  return { items, bed, W, N, slept, rest: !items.some(i => i.kind === 'sport') };
+  return { items, bed, W, N, slept, info, tInfo, school: !!school, rest: !items.some(i => i.kind === 'sport') };
 }
 // Index du moment en cours ou à venir (-1 : journée terminée)
 function nextIdx(pl, n = nowMin()) { return pl.items.findIndex(it => (it.end || it.t + 10) > n); }
@@ -1407,11 +1479,11 @@ function viewHome() {
 }
 function dayCardHTML() {
   const key = today(), pl = planFor(key);
-  if (!pl) return `<button class="card day-cta" data-act="bj-open"><span class="sun">🌅</span><span class="tx"><b>Prépare ta journée</b><span>Ton sommeil, tes sorties, tes repas : je calcule ton programme et je te rappelle tout.</span></span>${ICON.chev}</button>`;
+  if (!pl) return `<button class="card day-cta" data-act="bj-open"><span class="sun">🌅</span><span class="tx"><b>Prépare ta journée</b><span>${esc(dayTagTxt(dayInfo(key)))}<br>Ton sommeil, tes sorties, tes repas : je calcule ton programme et je te rappelle tout.</span></span>${ICON.chev}</button>`;
   const i = nextIdx(pl), nx = pl.items[i], after = i >= 0 ? pl.items.slice(i + 1, i + 3) : [];
   UI.nextKey = key + i;
   return `<section class="card day-card">
-    <div class="day-h"><span class="sun">🗓️</span><div class="tx"><b>Ton programme</b><span>${pl.slept !== null ? `Nuit de ${hTxt(pl.slept)} · ` : ''}au lit à ${fmtM(pl.bed)}${notifMode() === 'on' ? ' · 🔔' : ''}</span></div></div>
+    <div class="day-h"><span class="sun">${pl.info.e}</span><div class="tx"><b>Ton programme · ${esc(pl.info.type === 'school' ? 'cours' : pl.info.type === 'vac' ? 'vacances' : pl.info.type === 'ferie' ? 'férié' : 'week-end')}</b><span>${pl.slept !== null ? `Nuit de ${hTxt(pl.slept)} · ` : ''}au lit à ${fmtM(pl.bed)}${notifMode() === 'on' ? ' · 🔔' : ''}</span></div></div>
     ${nx ? `<button class="day-next" data-act="plan" style="${colStyle(nx.col)}"><span class="e">${nx.e}</span><span class="tx"><b>${esc(nx.n)}</b><span>${fmtM(nx.t)} · ${esc(nx.s)}</span></span><span class="when" data-rel="${nx.t}" data-end="${nx.end || ''}">${relTxt(nx.t, nx.end)}</span></button>` : '<p class="day-done">Journée terminée. Bonne nuit 🌙</p>'}
     ${after.length ? `<ul class="day-mini">${after.map(it => `<li><time>${fmtM(it.t)}</time><span>${it.e} ${esc(it.n)}</span></li>`).join('')}</ul>` : ''}
     <button class="btn btn-ghost btn-block" data-act="plan">Voir toute ma journée</button>
@@ -1922,8 +1994,23 @@ function bjDefaults() {
   const t = today();
   if (S.days[t]) return Object.assign({ meals: {} }, JSON.parse(JSON.stringify(S.days[t])));
   const prev = S.days[addDays(t, -1)] || S.days[Object.keys(S.days).sort().pop()] || {};
-  const n = nowMin();
-  return { sleep: prev.sleep || '22:30', wake: n >= 300 && n < 690 ? toHM(Math.floor(n / 5) * 5) : prev.wake || '08:00', next: prev.next || '07:30', acts: [], meals: {} };
+  const n = nowMin(), acts = [];
+  // jour de cours : on pré-remplit tes horaires habituels ; demain sans cours : réveil un peu plus tard
+  if (dayInfo(t).type === 'school') { const [from, to] = coursOf(parseKey(t).getDay()); acts.push({ k: 'school', from, to, auto: true }); }
+  const ws = S.profile.wakeSchool || '07:00';
+  const next = dayInfo(addDays(t, 1)).type === 'school' ? ws : S.profile.wakeFree || toHM(toMin(ws) + 90);
+  return { sleep: prev.sleep || '22:30', wake: n >= 300 && n < 690 ? toHM(Math.floor(n / 5) * 5) : prev.wake || '08:00', next, acts, meals: {} };
+}
+// Zone de vacances (une seule fois) : utile pour les vacances d'hiver et de printemps
+const zoneAskHTML = () => `<div class="zone-ask"><span>📍 Ta zone de vacances scolaires ?</span>
+    <div class="seg-mini" role="group" aria-label="Zone">${[['A', 'A'], ['B', 'B'], ['C', 'C'], ['x', 'Je sais pas']].map(([z, l]) => `<button data-act="bj-zone" data-arg="${z}">${l}</button>`).join('')}</div>
+    <p class="fine">A : Lyon, Bordeaux, Grenoble, Dijon… · B : Lille, Marseille, Nantes, Strasbourg, Rennes… · C : Paris, Toulouse, Montpellier, Versailles…</p></div>`;
+function dayTypeHTML() {
+  const info = dayInfo(today()), has = BJ.d.acts.some(a => a.k === 'school');
+  const sub = has ? 'Tes cours sont ajoutés : modifie les heures si besoin' : info.type === 'vac' ? `Jusqu’au ${fmtDate(info.until, { weekday: 'long', day: 'numeric', month: 'long' })} : profite, en gardant un bon rythme` : 'Pas de cours aujourd’hui';
+  return `<div class="daytype" style="${colStyle(info.col)}"><span class="dt-e">${info.e}</span><div class="tx"><b>${esc(info.n)}</b><span>${sub}</span></div></div>
+    <div class="seg-mini dt-seg" role="group" aria-label="Cours aujourd’hui"><button class="${has ? 'on' : ''}" data-act="bj-school" data-arg="1">🏫 J’ai cours</button><button class="${has ? '' : 'on'}" data-act="bj-school" data-arg="0">🏖️ Pas cours</button></div>
+    ${S.profile.zone ? '' : zoneAskHTML()}`;
 }
 function openBonjour(prompt) {
   Object.assign(BJ, { d: bjDefaults(), step: 0, steps: ['sleep', 'wake'].concat(pastMeals().length ? ['meals'] : [], ['acts', 'result']), prompt, ready: false });
@@ -2003,7 +2090,7 @@ function bjStepHTML() {
       <label class="timebox"><span>⏰ Réveil</span><input type="time" data-bj="wake" value="${esc(d.wake)}"></label>
       <div id="bj-sleep">${sleepCardHTML()}</div>
       <label class="field"><span>Demain, tu te lèves à quelle heure ?</span><input type="time" data-bj="next" value="${esc(d.next)}"></label>
-      <p class="fine">Je m’en sers pour ton heure de coucher : il te faut environ 9 h de sommeil.</p>
+      ${(ti => `<p class="fine">Demain : ${ti.e} ${ti.type === 'school' ? 'jour de cours' : esc(ti.n)}. Je m’en sers pour ton heure de coucher : il te faut environ 9 h de sommeil.${ti.type === 'school' ? '' : ' Même sans cours, ne décale pas ton réveil de plus de 2 h : ton sommeil reste meilleur.'}</p>`)(dayInfo(addDays(today(), 1)))}
       ${bjNav()}`;
   if (step === 'meals') {
     const past = pastMeals();
@@ -2016,6 +2103,7 @@ function bjStepHTML() {
     const late = n >= 660;
     return `${bjDots()}
       <div class="sheet-head"><p class="eyebrow">Aujourd’hui</p><h2>${late ? 'Et le reste de ta journée ?' : 'Qu’est-ce que tu as de prévu ?'}</h2><p>${late ? 'Ajoute ce que tu as déjà fait (cours, foot…) et ce qui est prévu : resto, sortie, entraînement…' : 'Ajoute tout ce qui compte : cours, resto, sortie, entraînement…'}</p></div>
+      ${dayTypeHTML()}
       <div class="act-add">${Object.entries(ACT_TYPES).map(([k, T]) => `<button class="chip" data-act="bj-add" data-arg="${k}">${ICON.plus}${T.e} ${T.n}</button>`).join('')}</div>
       <div class="acts">${d.acts.length ? d.acts.map(actCardHTML).join('') : '<p class="bj-empty">Rien de spécial ? Parfait, je m’occupe de tout ✨</p>'}</div>
       ${bjNav('bj-calc', 'Calculer')}`;
@@ -2054,7 +2142,11 @@ function saveBonjour() {
   const t = today(), first = !S.days[t], d = BJ.d;
   const meals = {};
   Object.entries(d.meals || {}).forEach(([m, L]) => { if (L && L.s) meals[m] = { s: L.s, place: L.s === 'out' ? (L.place || '').trim().slice(0, 30) : '', items: L.s === 'skip' ? [] : (L.items || []).slice(0, 12) }; });
-  S.days[t] = { sleep: d.sleep, wake: d.wake, next: d.next, acts: d.acts.map(a => Object.assign({}, a)), meals, at: Date.now() };
+  S.days[t] = { sleep: d.sleep, wake: d.wake, next: d.next, acts: d.acts.map(a => { const c = Object.assign({}, a); delete c.auto; return c; }), meals, at: Date.now() };
+  // on retient tes horaires de cours de ce jour de la semaine, et ton réveil selon que demain il y a cours ou non
+  const sch = d.acts.find(a => a.k === 'school');
+  if (sch) S.profile.cours = Object.assign({}, S.profile.cours, { [parseKey(t).getDay()]: [sch.from, sch.to] });
+  if (dayInfo(addDays(t, 1)).type === 'school') S.profile.wakeSchool = d.next; else S.profile.wakeFree = d.next;
   const keys = Object.keys(S.days).sort();
   while (keys.length > 60) delete S.days[keys.shift()];
   bjShow(BJ.steps.indexOf('result'), 'fwd');
@@ -2073,7 +2165,8 @@ function saveBonjour() {
 /* ---------- Programme du jour ---------- */
 function sumHTML(pl) {
   const v = pl.slept !== null ? sleepVerdict(pl.slept) : null, ses = pl.items.find(i => i.kind === 'sport');
-  return `<div class="sum">
+  return `<p class="day-tag" style="${colStyle(pl.info.col)}">${esc(dayTagTxt(pl.info))}</p>
+    <div class="sum">
       <div style="${v ? colStyle(v.col) : ''}"><span>😴 Ta nuit</span><b>${pl.slept !== null ? hTxt(pl.slept) : '—'}</b></div>
       <div><span>🏋️ Séance</span><b>${ses ? (ses.done ? 'Faite ✓' : fmtM(ses.t)) : 'Repos'}</b></div>
       <div><span>🛏️ Au lit</span><b>${fmtM(pl.bed)}</b></div>
@@ -2327,6 +2420,7 @@ function settingsHTML() {
     <label class="field"><span>Date de naissance</span><input id="set-birth" type="date" value="${esc(S.profile.birth)}"></label>
     <div class="row" style="cursor:default"><span class="ic">🔊</span><span class="tx"><b>Sons pendant les séances</b><span>Bips de décompte et de changement</span></span><button class="toggle ${S.profile.sound ? 'on' : ''}" data-act="sound" aria-pressed="${S.profile.sound}" aria-label="Sons"></button></div>
     ${notifMode() === 'none' ? '' : `<div class="notif-row">${notifSettingsRow()}</div>`}
+    <div class="row" style="cursor:default"><span class="ic">📍</span><span class="tx"><b>Zone de vacances</b><span>Pour les vacances d’hiver et de printemps</span></span><div class="seg-mini" role="group" aria-label="Zone">${['A', 'B', 'C'].map(z => `<button class="${S.profile.zone === z ? 'on' : ''}" data-act="set-zone" data-arg="${z}">${z}</button>`).join('')}</div></div>
     <div class="row" style="cursor:default"><span class="ic">${Sync.ref ? '☁️' : '📱'}</span><span class="tx"><b>${Sync.ref ? 'Sauvegardé sur ton compte' : 'Sauvegardé sur cet appareil'}</b><span>${Sync.ref ? 'Tu retrouves tes données sur tous tes appareils.' : 'Pense à copier tes données de temps en temps.'}</span></span></div>
     <div class="sheet-actions"><button class="btn btn-ghost" data-act="copy">Copier mes données</button><button class="btn btn-ghost" data-act="imp-open">Importer</button></div>
     <div id="imp" hidden><label class="field"><span>Colle ici tes données copiées</span><textarea id="imp-txt" spellcheck="false"></textarea></label><button class="btn btn-ghost btn-block" data-act="import" style="margin-top:10px">Remplacer mes données</button></div>
@@ -2696,6 +2790,26 @@ const ACT = {
   'bj-del'(i) { BJ.d.acts.splice(+i, 1); bjRefresh(); },
   'bj-meal'(arg) { const [i, m] = arg.split('|'), a = BJ.d.acts[+i]; a.meal = m; a.from = MEALS[m][1]; bjRefresh(); },
   'bj-pick'(arg) { const [i, f, v] = arg.split('|'); BJ.d.acts[+i][f] = v; bjRefresh(); },
+  'bj-school'(v) {
+    const acts = BJ.d.acts, has = acts.some(a => a.k === 'school');
+    if (v === '1' && !has) { const [from, to] = coursOf(new Date().getDay()); acts.unshift({ k: 'school', from, to, auto: true }); }
+    if (v === '0') BJ.d.acts = acts.filter(a => a.k !== 'school');
+    bjRefresh();
+  },
+  'bj-zone'(z) {
+    S.profile.zone = z; persist();
+    // la zone peut changer le type du jour (vacances d'hiver ou de printemps) : on ajuste les cours ajoutés automatiquement
+    const school = dayInfo(today()).type === 'school', acts = BJ.d.acts;
+    if (!school) BJ.d.acts = acts.filter(a => !(a.k === 'school' && a.auto));
+    else if (!acts.some(a => a.k === 'school')) { const [from, to] = coursOf(new Date().getDay()); acts.unshift({ k: 'school', from, to, auto: true }); }
+    bjRefresh();
+    if (z !== 'x') toast(`Zone ${z} enregistrée`, 'Tu peux la changer dans les réglages');
+  },
+  'set-zone'(z, el) {
+    S.profile.zone = z; persist();
+    $$('button', el.parentElement).forEach(b => b.classList.toggle('on', b === el));
+    render();
+  },
   'bj-mst'(arg) { const [m, s] = arg.split('|'), L = BJ.d.meals[m] = BJ.d.meals[m] || {}; L.s = s; if (s === 'skip') L.items = []; bjRefresh(); },
   'bj-mplace'(arg) { const [m, p] = arg.split('|'); BJ.d.meals[m].place = p; bjRefresh(); },
   'bj-mitem'(arg) {
@@ -2822,6 +2936,7 @@ render(true);
 touchIcon();
 setInterval(remTick, 20000);
 if (NOTIF.synced !== today()) syncReminders();
+refreshVacances();
 Promise.race([initRemote(), new Promise(r => setTimeout(r, 2500))]).then(() => setTimeout(runPrompts, 350));
 })();
 </script>
