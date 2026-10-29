@@ -591,6 +591,11 @@ details.rules[open] summary .i { transform: rotate(90deg); }
 .sum b { font-family: var(--font-display); font-size: 16px; color: var(--c, var(--text)); white-space: nowrap; }
 .sleep-msg { font-size: 14px; padding: 10px 14px; border-radius: var(--r-md); background: var(--cs); }
 .plan-tl { padding-top: 4px; }
+.plan-wrap { display: flex; flex-direction: column; gap: 12px; }
+.past-box { padding: 2px 14px; }
+.past-box summary { padding: 10px 0; }
+.past-box summary b { font-size: 14px; color: var(--muted); }
+.past-box .plan-tl { padding: 4px 0 2px; }
 .plan-tl .tl-row { animation: rise .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
 .plan-tl .tl-row[data-act] { cursor: pointer; }
 .tl-row.past .tl-time, .tl-row.past .tl-tx b { color: var(--dim); }
@@ -1001,7 +1006,23 @@ const ACT_TYPES = {
   club:    { e: '⚽', n: 'Sport en club', col: 'lime', from: '17:00', to: '18:30', picks: ['Foot', 'Basket', 'Natation', 'Judo', 'Danse', 'Tennis', 'Rugby', 'Athlé', 'Boxe', 'Hand'] },
   other:   { e: '📌', n: 'Autre', col: 'pink', from: '10:00', to: '11:00', picks: ['Devoirs', 'Médecin', 'Dentiste', 'Courses', 'Famille', 'Musique'] },
 };
-const MEALS = { pdj: ['Petit-déj', '08:00'], dej: ['Déjeuner', '12:30'], gouter: ['Goûter', '16:30'], diner: ['Dîner', '19:30'] };
+const MEALS = { pdj: ['Petit-déj', '08:00', '🍳', 'amber'], dej: ['Déjeuner', '12:30', '🍽️', 'pink'], gouter: ['Goûter', '16:30', '🍪', 'lime'], diner: ['Dîner', '19:30', '🍝', 'coral'] };
+// À partir de ces heures (en minutes), le repas est passé : si la journée est préparée plus tard, on demande ce que tu as mangé
+const MEAL_END = { pdj: 630, dej: 810, gouter: 1050, diner: 1230 };
+const MAIN_DISH = ['Pâtes', 'Riz', 'Frites', 'Viande', 'Poulet', 'Poisson', 'Œufs', 'Burger', 'Sandwich', 'Pizza', 'Légumes', 'Fromage', 'Dessert'];
+const MEAL_PICKS = {
+  pdj: ['Céréales', 'Lait', 'Tartines', 'Viennoiserie', 'Yaourt', 'Fruit', 'Œufs', 'Jus'],
+  dej: MAIN_DISH,
+  gouter: ['Pain', 'Chocolat', 'Biscuits', 'Fruit', 'Yaourt', 'Lait', 'Barre de céréales', 'Compote'],
+  diner: MAIN_DISH,
+};
+const PROT = /viande|poulet|poisson|œuf|oeuf|jambon|thon|lait|yaourt|fromage|burger|kebab|lentille/i;
+function mealLogTxt(m, L) {
+  const where = L.s === 'out' ? (L.place || 'Dehors').trim() : L.s === 'cantine' ? 'À la cantine' : 'À la maison';
+  const what = (L.items || []).join(', ').toLowerCase();
+  const prot = (m === 'dej' || m === 'diner') && what && !PROT.test(what) ? ' · pense aux protéines au prochain repas' : '';
+  return `${where}${what ? ' : ' + what : ''}${prot}`;
+}
 const PLACES = ['McDo', 'KFC', 'Burger King', 'Kebab', 'Pizzeria', 'Sushi', 'Boulangerie', 'Chez des amis', 'En famille'];
 const SPORTY = /foot|basket|v[ée]lo|skate|piscine|natation|nage|judo|danse|tennis|rugby|athl|boxe|hand|course|running|roller|trott|escalade|karat|gym|badminton|volley|ping|surf|ski|rando/i;
 const FAST = /mac ?do|mcdo|mc ?donald|burger|\bbk\b|quick|five guys|kfc|kebab|tacos|pizz/i;
@@ -1069,48 +1090,74 @@ function planFor(key) {
   const school = busy.find(a => a.k === 'school');
   const inBusy = (m, ks) => busy.find(b => m >= b.f && m < b.t && (!ks || ks.includes(b.k)));
   const foodOf = m => acts.find(a => a.k === 'food' && a.meal === m);
+  const meals = D.meals || {};
+  // heure à laquelle la journée a été préparée (0 si un autre jour) : rien n'est placé avant
+  const at = D.at ? new Date(D.at) : null, pm = at && keyOf(at) === key ? at.getHours() * 60 + at.getMinutes() : 0;
   const items = [];
   const add = (t, e, n, s, col, o) => items.push(Object.assign({ t: Math.round(t), e, n, s, col, notify: true }, o));
-  const out = (f, label) => add(f.f, placeEmoji(f.place), `${label} · ${(f.place || 'dehors').trim()}`, placeTip(f.place), 'amber', { kind: 'meal' });
+  const mk = (t, e, n, s, col, o) => Object.assign({ t: Math.round(t), e, n, s, col, notify: true, kind: 'meal' }, o);
+  const out = (f, label, col) => mk(f.f, placeEmoji(f.place), `${label} · ${(f.place || 'dehors').trim()}`, placeTip(f.place), col);
+  const M = {};
 
   add(W, '☀️', 'Réveil', 'Ouvre les volets : la lumière du jour règle ton horloge interne', 'amber', { notify: false, kind: 'wake' });
 
-  let f = foodOf('pdj'), bk;
-  if (f) { bk = f.f; out(f, 'Petit-déj'); }
+  let f = foodOf('pdj');
+  if (f) M.pdj = out(f, 'Petit-déj', 'amber');
   else {
-    bk = W + 20;
+    let bk = W + 20;
     const first = busy.filter(b => b.f > W).sort((a, b) => a.f - b.f)[0];
     if (first && bk > first.f - 20) bk = Math.max(W + 5, first.f - 25);
-    add(bk, '🍳', 'Petit-déjeuner', 'Céréales ou pain, un produit laitier, un fruit. Ne le saute jamais !', 'amber', { kind: 'meal' });
+    M.pdj = mk(bk, '🍳', 'Petit-déjeuner', 'Céréales ou pain, un produit laitier, un fruit. Ne le saute jamais !', 'amber');
   }
 
   const fl = foodOf('dej');
-  let lu = 750;
-  if (fl) { lu = fl.f; out(fl, 'Déjeuner'); }
-  else if (school && school.f <= 720 && school.t >= 780) { lu = 720; add(lu, '🍽️', 'Déjeuner à la cantine', placeTip('cantine'), 'pink', { notify: false, kind: 'meal' }); }
+  if (fl) M.dej = out(fl, 'Déjeuner', 'pink');
+  else if (school && school.f <= 720 && school.t >= 780) M.dej = mk(720, '🍽️', 'Déjeuner à la cantine', placeTip('cantine'), 'pink', { notify: false });
   else {
+    let lu = 750;
     const b = inBusy(lu);
     if (b && b.t <= 840) lu = b.t + 10;
-    add(lu, '🍽️', 'Déjeuner', b && lu < b.t ? 'Pendant ta sortie : prends un vrai repas, pas juste des chips 🥪' : 'Féculents, protéines, légumes et un produit laitier', 'pink', { kind: 'meal' });
+    M.dej = mk(lu, '🍽️', 'Déjeuner', b && lu < b.t ? 'Pendant ta sortie : prends un vrai repas, pas juste des chips 🥪' : 'Féculents, protéines, légumes et un produit laitier', 'pink');
   }
 
   f = foodOf('gouter');
-  let go = 990;
-  if (f) { go = f.f; out(f, 'Goûter'); }
+  if (f) M.gouter = out(f, 'Goûter', 'lime');
   else {
+    let go = 990;
     if (school && school.t >= 930 && school.t <= 1080) go = school.t + 15;
     const away = inBusy(go, ['friends', 'club', 'other']);
-    add(go, '🍪', 'Goûter', away ? 'Emporte-le : un fruit et du pain avec du chocolat, ou une barre de céréales' : 'Le repas clé pour faire du muscle : pain, fromage ou beurre de cacahuète, lait, fruit', 'lime', { kind: 'meal' });
+    M.gouter = mk(go, '🍪', 'Goûter', away ? 'Emporte-le : un fruit et du pain avec du chocolat, ou une barre de céréales' : 'Le repas clé pour faire du muscle : pain, fromage ou beurre de cacahuète, lait, fruit', 'lime');
   }
 
   f = foodOf('diner');
-  let di = clamp(bed - 135, 1110, 1170);
-  if (f) { di = f.f; out(f, 'Dîner'); }
+  const fastLunch = (fl && FAST.test(fl.place || '')) || (meals.dej && meals.dej.s === 'out' && FAST.test(meals.dej.place || ''));
+  if (f) M.diner = out(f, 'Dîner', 'coral');
   else {
+    let di = clamp(bed - 135, 1110, 1170);
     const b = inBusy(di);
     if (b && b.t + 15 <= bed - 60) di = b.t + 15;
-    add(di, '🍝', 'Dîner', fl && FAST.test(fl.place || '') ? 'Légumes, féculents, protéines et un fruit. Pas besoin de manger moins : ton corps grandit.' : 'Comme le déjeuner : féculents, protéines, légumes, laitage', 'coral', { kind: 'meal' });
+    M.diner = mk(di, '🍝', 'Dîner', fastLunch ? 'Légumes, féculents, protéines et un fruit. Pas besoin de manger moins : ton corps grandit.' : 'Comme le déjeuner : féculents, protéines, légumes, laitage', 'coral');
   }
+
+  // repas déjà pris (journée préparée l'après-midi) et rattrapage d'un repas sauté
+  Object.keys(M).forEach(m => {
+    const L = meals[m];
+    if (!L || !L.s) return;
+    Object.assign(M[m], L.s === 'skip'
+      ? { e: '⚠️', n: `${MEALS[m][0]} sauté`, s: 'Ça arrive. Le prochain repas compte double : ton corps grandit et a besoin d’énergie.' }
+      : { e: L.s === 'out' ? placeEmoji(L.place) : M[m].e, n: `${MEALS[m][0]} ✓`, s: mealLogTxt(m, L) },
+    { notify: false, done: true });
+  });
+  const skipped = m => meals[m] && meals[m].s === 'skip';
+  if (skipped('pdj') && pm && pm < M.dej.t - 75) M.snack = mk(pm + 5, '🥐', 'Collation de rattrapage', 'Pas de petit-déj : un fruit, un yaourt et du pain, maintenant', 'amber', { notify: false });
+  if (skipped('dej') && pm) {
+    if (pm < 960) {
+      M.lunch = mk(pm + 5, '🍽️', 'Rattrape ton déjeuner', 'Un vrai repas maintenant : féculents, protéines et légumes', 'pink', { notify: false });
+      if (!meals.gouter && M.gouter.t < pm + 150) { if (pm + 150 <= M.diner.t - 75) M.gouter.t = pm + 150; else delete M.gouter; }
+    } else if (!meals.gouter) Object.assign(M.gouter, { t: Math.max(M.gouter.t, pm + 5), n: 'Goûter costaud', s: 'Tu as sauté le déjeuner : pain, fromage ou jambon, lait, fruit' });
+  }
+  if (skipped('gouter') && !meals.diner) M.diner.s = 'Dîner bien complet ce soir : féculents, protéines, légumes et un laitage';
+  Object.values(M).forEach(it => items.push(it));
 
   busy.forEach(a => {
     const what = (a.what || '').trim(), until = `Jusqu’à ${fmtM(a.t)}`;
@@ -1122,18 +1169,15 @@ function planFor(key) {
 
   // séance : jamais juste après un repas ni trop près du coucher ; étirements si tu fais déjà du sport.
   // Les étirements doux (light) peuvent se faire peu après un repas et jusqu'à 30 min avant le coucher.
-  const blocksFor = light => busy.map(b => [b.f - 15, b.t + 15]).concat(
-    acts.filter(a => a.k === 'food').map(a => [a.f, a.f + (light ? 40 : 75)]),
-    [[bk, bk + 45], [lu, lu + (light ? 30 : 90)], [go, go + 30], [di - 15, di + (light ? 40 : 90)]]);
+  const blocksFor = light => busy.map(b => [b.f - 15, b.t + 15]).concat(Object.entries(M).map(([m, it]) =>
+    m === 'diner' ? [it.t - 15, it.t + (light ? 40 : 90)] : [it.t, it.t + (m === 'pdj' ? 45 : m === 'gouter' || m === 'snack' ? 30 : light ? 30 : 90)]));
   const blocks = blocksFor(false);
   const sporty = busy.filter(a => (a.k === 'club' || SPORTY.test(a.what || '')) && a.t - a.f >= 45).sort((a, b) => b.t - a.t)[0];
   const done = S.workouts.some(w => w.d === key);
-  let pid = WEEK[parseKey(key).getDay()], pref = go + 75, label = null;
+  let pid = WEEK[parseKey(key).getDay()], pref = (M.gouter ? M.gouter.t : 990) + 75, label = null;
   if (sporty) { pid = 'posture'; pref = sporty.t + 30; label = `Étirements après ${(sporty.what || 'ton sport').trim()}`; }
   else if (pid === 'repos') pid = null;
-  // pas de séance placée avant le moment où la journée a été préparée
-  const at = D.at ? new Date(D.at) : null, atMin = at && keyOf(at) === key ? at.getHours() * 60 + at.getMinutes() + 15 : 0;
-  const lo = Math.max(W + 60, 540, atMin), hi = bed - 90;
+  const lo = Math.max(W + 60, 540, pm ? pm + 15 : 0), hi = bed - 90;
   if (pid === 'libre') {
     const c = findSlot(30, pref, lo, hi, blocks);
     if (c !== null) add(c, '⚽', 'Bouge dehors 30 min', 'Vélo, foot, basket, roller… ou l’Express 7 min si tu restes à la maison', 'cyan', { kind: 'sport', pid: 'express', done, notify: !done, end: c + 30 });
@@ -1144,9 +1188,9 @@ function planFor(key) {
     if (c !== null) { const PR = PROGS[pid]; add(c, PR.e, label || PR.n, done ? 'Séance faite ✓ Bravo !' : `≈ ${dur} min · ${PR.focus}`, PR.col, { kind: 'sport', pid, done, notify: !done, end: c + dur }); }
   }
 
-  [630, 900].forEach(t => { if (!inBusy(t, ['school']) && !items.some(i => Math.abs(i.t - t) < 40)) add(t, '💧', 'Un grand verre d’eau', 'Ta gourde, ou deux verres d’un coup', 'cyan', { kind: 'water' }); });
+  [630, 900].forEach(t => { if (t > pm && !inBusy(t, ['school']) && !items.some(i => Math.abs(i.t - t) < 40)) add(t, '💧', 'Un grand verre d’eau', 'Ta gourde, ou deux verres d’un coup', 'cyan', { kind: 'water' }); });
   if (slept !== null && slept < 390) {
-    const c = findSlot(20, 870, 810, 1020, blocks);
+    const c = findSlot(20, 870, Math.max(810, pm + 10), 1020, blocks);
     if (c !== null) add(c, '😴', 'Petite sieste (20 min max)', 'Pas plus, sinon tu dormiras moins bien ce soir', 'violet', { kind: 'nap', end: c + 20 });
   }
   add(bed - 60, '📵', 'Écrans coupés', 'Douche, sac, lecture… tu t’endormiras plus vite', 'violet', { kind: 'night' });
@@ -1764,7 +1808,7 @@ function closeSheet(silent) {
 function closeSheetIfStale() {
   if (!SHEET) return;
   const k = SHEET.opts.kind, t = today();
-  if ((k === 'welcome' && S.onboarded) || (k === 'weigh' && SHEET.opts.prompt && S.weights.some(e => e.d === t)) || (k === 'bonjour' && SHEET.opts.prompt && S.days[t] && BJ.step < 3)) closeSheet(true);
+  if ((k === 'welcome' && S.onboarded) || (k === 'weigh' && SHEET.opts.prompt && S.weights.some(e => e.d === t)) || (k === 'bonjour' && SHEET.opts.prompt && S.days[t] && bjAt() !== 'result')) closeSheet(true);
 }
 function bindGrab(sheet) {
   const grab = $('.grab', sheet);
@@ -1870,17 +1914,19 @@ function saveHeight() {
   checkBadges(); persist(); render();
 }
 
-/* ---------- Bonjour : les questions du matin ---------- */
-const BJ = { step: 0, d: null, prompt: false, ready: false, tok: 0 };
+/* ---------- Bonjour : les questions du matin (ou le point sur la journée, selon l'heure) ---------- */
+const BJ = { step: 0, steps: [], d: null, prompt: false, ready: false, tok: 0 };
+const pastMeals = () => { const n = nowMin(); return Object.keys(MEAL_END).filter(m => n >= MEAL_END[m]); };
+const bjAt = () => BJ.steps[BJ.step];
 function bjDefaults() {
   const t = today();
-  if (S.days[t]) return JSON.parse(JSON.stringify(S.days[t]));
+  if (S.days[t]) return Object.assign({ meals: {} }, JSON.parse(JSON.stringify(S.days[t])));
   const prev = S.days[addDays(t, -1)] || S.days[Object.keys(S.days).sort().pop()] || {};
   const n = nowMin();
-  return { sleep: prev.sleep || '22:30', wake: n >= 300 && n < 690 ? toHM(Math.floor(n / 5) * 5) : prev.wake || '08:00', next: prev.next || '07:30', acts: [] };
+  return { sleep: prev.sleep || '22:30', wake: n >= 300 && n < 690 ? toHM(Math.floor(n / 5) * 5) : prev.wake || '08:00', next: prev.next || '07:30', acts: [], meals: {} };
 }
 function openBonjour(prompt) {
-  Object.assign(BJ, { d: bjDefaults(), step: 0, prompt, ready: false });
+  Object.assign(BJ, { d: bjDefaults(), step: 0, steps: ['sleep', 'wake'].concat(pastMeals().length ? ['meals'] : [], ['acts', 'result']), prompt, ready: false });
   openSheet(`<div class="bj" id="bj">${bjStepHTML()}</div>`, { kind: 'bonjour', prompt, cls: 'tall', onClose: () => {
     if (prompt && !S.days[today()]) { S.asked.b = today(); persist(); }
     if (prompt) setTimeout(runPrompts, 450);
@@ -1888,7 +1934,7 @@ function openBonjour(prompt) {
 }
 function bjShow(step, dir) {
   BJ.step = step;
-  if (step < 3) BJ.ready = false;
+  if (bjAt() !== 'result') BJ.ready = false;
   const box = $('#bj');
   if (!box) return;
   box.className = 'bj';
@@ -1899,7 +1945,20 @@ function bjShow(step, dir) {
   if (sh) sh.scrollTop = 0;
 }
 const bjRefresh = () => { const box = $('#bj'); if (box) box.innerHTML = bjStepHTML(); };
-const bjDots = () => `<div class="bj-dots" aria-label="Étape ${BJ.step + 1} sur 4">${[0, 1, 2, 3].map(i => `<i class="${i === BJ.step ? 'on' : i < BJ.step ? 'done' : ''}"></i>`).join('')}</div>`;
+const bjDots = () => `<div class="bj-dots" aria-label="Étape ${BJ.step + 1} sur ${BJ.steps.length}">${BJ.steps.map((_, i) => `<i class="${i === BJ.step ? 'on' : i < BJ.step ? 'done' : ''}"></i>`).join('')}</div>`;
+const bjNav = (next = 'bj-next', label = 'Suivant') => `<div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-back">Retour</button><button class="btn btn-primary" data-act="${next}">${label}</button></div>`;
+// Carte « repas déjà passé » : maison, cantine, dehors ou sauté, et ce que tu as mangé
+function mealCardHTML(m) {
+  const L = BJ.d.meals[m] || {}, M0 = MEALS[m];
+  const opts = [['home', 'Maison']].concat(m === 'dej' ? [['cantine', 'Cantine']] : [], [['out', 'Dehors'], ['skip', 'Sauté']]);
+  return `<div class="act" style="${colStyle(M0[3])}">
+      <div class="act-h"><span class="e">${M0[2]}</span><b>${M0[0]}</b>${L.s ? `<span class="tag" style="${colStyle(L.s === 'skip' ? 'coral' : 'lime')}">${L.s === 'skip' ? 'Sauté' : 'Mangé ✓'}</span>` : ''}</div>
+      <div class="seg-mini" role="group" aria-label="${M0[0]}">${opts.map(([s, l]) => `<button class="${L.s === s ? 'on' : ''}" data-act="bj-mst" data-arg="${m}|${s}">${l}</button>`).join('')}</div>
+      ${L.s === 'out' ? `<label class="field"><span>Où ?</span><input data-bj="meals.${m}.place" maxlength="30" autocomplete="off" placeholder="ex : McDo" value="${esc(L.place || '')}"></label>
+      <div class="picks">${PLACES.map(p => `<button class="chip ${L.place === p ? 'on' : ''}" data-act="bj-mplace" data-arg="${m}|${p}">${p}</button>`).join('')}</div>` : ''}
+      ${L.s && L.s !== 'skip' ? `<div class="field"><span>Tu as mangé quoi ? (facultatif)</span><div class="picks">${MEAL_PICKS[m].map(p => `<button class="chip ${(L.items || []).includes(p) ? 'on' : ''}" data-act="bj-mitem" data-arg="${m}|${p}">${p}</button>`).join('')}</div></div>` : ''}
+    </div>`;
+}
 function sleepCardHTML() {
   const m = sleepMin(BJ.d);
   if (m === null) return '';
@@ -1924,50 +1983,68 @@ function actCardHTML(a, i) {
   }
   return `<div class="act" style="${colStyle(T.col)}"><div class="act-h"><span class="e">${T.e}</span><b>${T.n}</b><button class="act-x" data-act="bj-del" data-arg="${i}" aria-label="Retirer">${ICON.close}</button></div>${body}</div>`;
 }
+// Nom de la suite de journée selon l'heure : « ta journée », « ton après-midi », « ta soirée »
+const dayPart = n => (n < 690 ? 'ta journée' : n < 1080 ? 'ton après-midi' : 'ta soirée');
 function bjStepHTML() {
-  const d = BJ.d, name = S.profile.name.trim();
-  if (BJ.step === 0) {
-    const h = new Date().getHours();
+  const d = BJ.d, name = S.profile.name.trim(), n = nowMin(), step = bjAt();
+  if (step === 'sleep') {
+    const late = n >= 660;
     return `${bjDots()}
-      <div class="bj-sky" aria-hidden="true"><span>${h >= 18 ? '🌆' : '🌅'}</span></div>
-      <div class="sheet-head center"><p class="eyebrow">Programme du jour</p><h2>${h >= 18 ? 'Bonsoir' : 'Bonjour'}${name ? ' ' + esc(name) : ''} !</h2><p>Trois questions rapides, et je prépare ta journée : repas, sport, coucher, avec un rappel 5 min avant chaque moment.</p></div>
+      <div class="bj-sky" aria-hidden="true"><span>${n >= 1080 ? '🌆' : late ? '🌤️' : '🌅'}</span></div>
+      <div class="sheet-head center"><p class="eyebrow">Programme du jour · ${fmtM(n)}</p><h2>${n >= 1080 ? 'Bonsoir' : 'Bonjour'}${name ? ' ' + esc(name) : ''} !</h2><p>${late
+        ? `Il est ${fmtM(n)}. On fait vite le point sur ta journée, puis je te prépare ${dayPart(n)}, avec un rappel 5 min avant chaque moment.`
+        : 'Trois questions rapides, et je prépare ta journée : repas, sport, coucher, avec un rappel 5 min avant chaque moment.'}</p></div>
       <label class="timebox"><span>😴 Hier soir, tu dormais à quelle heure ?</span><input type="time" data-bj="sleep" value="${esc(d.sleep)}"></label>
       <p class="fine center">Une estimation suffit : l’heure où tu as fermé les yeux.</p>
       <div class="sheet-actions"><button class="btn btn-ghost" data-act="${BJ.prompt ? 'bj-later' : 'close-sheet'}">${BJ.prompt ? 'Plus tard' : 'Annuler'}</button><button class="btn btn-primary" data-act="bj-next">Suivant</button></div>`;
   }
-  if (BJ.step === 1) return `${bjDots()}
+  if (step === 'wake') return `${bjDots()}
       <div class="sheet-head center"><p class="eyebrow">Ton réveil</p><h2>Et ce matin, réveil à quelle heure ?</h2></div>
       <label class="timebox"><span>⏰ Réveil</span><input type="time" data-bj="wake" value="${esc(d.wake)}"></label>
       <div id="bj-sleep">${sleepCardHTML()}</div>
       <label class="field"><span>Demain, tu te lèves à quelle heure ?</span><input type="time" data-bj="next" value="${esc(d.next)}"></label>
       <p class="fine">Je m’en sers pour ton heure de coucher : il te faut environ 9 h de sommeil.</p>
-      <div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-back">Retour</button><button class="btn btn-primary" data-act="bj-next">Suivant</button></div>`;
-  if (BJ.step === 2) return `${bjDots()}
-      <div class="sheet-head"><p class="eyebrow">Aujourd’hui</p><h2>Qu’est-ce que tu as de prévu ?</h2><p>Ajoute tout ce qui compte : cours, resto, sortie, entraînement…</p></div>
+      ${bjNav()}`;
+  if (step === 'meals') {
+    const past = pastMeals();
+    return `${bjDots()}
+      <div class="sheet-head"><p class="eyebrow">Jusqu’ici</p><h2>${past.length > 1 ? 'Qu’est-ce que tu as mangé aujourd’hui ?' : 'Ce matin, tu as pris un petit-déj ?'}</h2><p>Je m’en sers pour la suite : si tu as sauté un repas, je t’ajoute de quoi rattraper.</p></div>
+      <div class="acts">${past.map(mealCardHTML).join('')}</div>
+      ${bjNav()}`;
+  }
+  if (step === 'acts') {
+    const late = n >= 660;
+    return `${bjDots()}
+      <div class="sheet-head"><p class="eyebrow">Aujourd’hui</p><h2>${late ? 'Et le reste de ta journée ?' : 'Qu’est-ce que tu as de prévu ?'}</h2><p>${late ? 'Ajoute ce que tu as déjà fait (cours, foot…) et ce qui est prévu : resto, sortie, entraînement…' : 'Ajoute tout ce qui compte : cours, resto, sortie, entraînement…'}</p></div>
       <div class="act-add">${Object.entries(ACT_TYPES).map(([k, T]) => `<button class="chip" data-act="bj-add" data-arg="${k}">${ICON.plus}${T.e} ${T.n}</button>`).join('')}</div>
       <div class="acts">${d.acts.length ? d.acts.map(actCardHTML).join('') : '<p class="bj-empty">Rien de spécial ? Parfait, je m’occupe de tout ✨</p>'}</div>
-      <div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-back">Retour</button><button class="btn btn-primary" data-act="bj-calc">Calculer</button></div>`;
+      ${bjNav('bj-calc', 'Calculer')}`;
+  }
   if (!BJ.ready) {
     const tok = ++BJ.tok;
-    setTimeout(() => { if (tok === BJ.tok && BJ.step === 3 && SHEET && SHEET.opts.kind === 'bonjour') { BJ.ready = true; bjShow(3, 'fade'); } }, reduced() ? 50 : 1200);
-    return `${bjDots()}<div class="calc"><div class="orbit"></div><p>Je calcule ta journée…</p></div>`;
+    setTimeout(() => { if (tok === BJ.tok && bjAt() === 'result' && SHEET && SHEET.opts.kind === 'bonjour') { BJ.ready = true; bjShow(BJ.step, 'fade'); } }, reduced() ? 50 : 1200);
+    return `${bjDots()}<div class="calc"><div class="orbit"></div><p>Je calcule ${dayPart(n)}…</p></div>`;
   }
   const pl = planFor(today());
   return `${bjDots()}
-    <div class="sheet-head center"><p class="eyebrow">C’est prêt</p><h2>Ta journée${name ? ', ' + esc(name) : ''}</h2></div>
+    <div class="sheet-head center"><p class="eyebrow">C’est prêt</p><h2>${cap(dayPart(n))}${name ? ', ' + esc(name) : ''}</h2></div>
     ${sumHTML(pl)}
     <div class="notif-slot">${notifCardHTML(pl)}</div>
-    <div class="tl plan-tl">${planRows(pl)}</div>
+    <div class="plan-wrap">${planTimeline(pl)}</div>
     <button class="btn btn-primary btn-block" data-act="bj-done">C’est parti 🚀</button>`;
 }
 function bjValid() {
-  const d = BJ.d;
-  if (BJ.step === 0 && isNaN(toMin(d.sleep))) return toast('Indique à quelle heure tu dormais hier soir'), false;
-  if (BJ.step === 1) {
+  const d = BJ.d, step = bjAt();
+  if (step === 'sleep' && isNaN(toMin(d.sleep))) return toast('Indique à quelle heure tu dormais hier soir'), false;
+  if (step === 'wake') {
     if (isNaN(toMin(d.wake))) return toast('Indique ton heure de réveil'), false;
     if (sleepMin(d) === null) return toast('Vérifie tes heures de coucher et de réveil'), false;
   }
-  if (BJ.step === 2) {
+  if (step === 'meals') {
+    const miss = pastMeals().find(m => !(d.meals[m] && d.meals[m].s));
+    if (miss) return toast(`Et pour le ${MEALS[miss][0].toLowerCase()} ?`, 'Maison, cantine, dehors ou sauté'), false;
+  }
+  if (step === 'acts') {
     const bad = d.acts.find(a => isNaN(toMin(a.from)) || (a.k !== 'food' && !(toMin(a.to) > toMin(a.from))));
     if (bad) return toast(`Vérifie les heures de « ${ACT_TYPES[bad.k].n} »`), false;
   }
@@ -1975,10 +2052,12 @@ function bjValid() {
 }
 function saveBonjour() {
   const t = today(), first = !S.days[t], d = BJ.d;
-  S.days[t] = { sleep: d.sleep, wake: d.wake, next: d.next, acts: d.acts.map(a => Object.assign({}, a)), at: Date.now() };
+  const meals = {};
+  Object.entries(d.meals || {}).forEach(([m, L]) => { if (L && L.s) meals[m] = { s: L.s, place: L.s === 'out' ? (L.place || '').trim().slice(0, 30) : '', items: L.s === 'skip' ? [] : (L.items || []).slice(0, 12) }; });
+  S.days[t] = { sleep: d.sleep, wake: d.wake, next: d.next, acts: d.acts.map(a => Object.assign({}, a)), meals, at: Date.now() };
   const keys = Object.keys(S.days).sort();
   while (keys.length > 60) delete S.days[keys.shift()];
-  bjShow(3, 'fwd');
+  bjShow(BJ.steps.indexOf('result'), 'fwd');
   if (first) {
     setTimeout(() => {
       addXP(10, 'Journée préparée');
@@ -2000,12 +2079,19 @@ function sumHTML(pl) {
       <div><span>🛏️ Au lit</span><b>${fmtM(pl.bed)}</b></div>
     </div>${v ? `<p class="sleep-msg" style="${colStyle(v.col)}">${v.txt}</p>` : ''}`;
 }
-function planRows(pl) {
+// Ce qui est déjà passé est replié pour mettre en avant la suite de la journée
+function planTimeline(pl) {
+  const nx = nextIdx(pl), past = nx < 0 ? pl.items.length : nx;
+  if (past < 3 || past === pl.items.length) return `<div class="tl plan-tl">${planRows(pl)}</div>`;
+  return `<details class="rules past-box"><summary><span>🕘</span><b>Déjà passé · ${past}</b>${ICON.chev}</summary><div class="tl plan-tl">${planRows(pl, 0, past)}</div></details>
+    <p class="eyebrow">À venir</p><div class="tl plan-tl">${planRows(pl, past)}</div>`;
+}
+function planRows(pl, from = 0, to = pl.items.length) {
   const n = nowMin(), nx = nextIdx(pl, n), bells = notifMode() === 'on';
-  return pl.items.map((it, i) => {
-    const past = nx < 0 || i < nx;
+  return pl.items.slice(from, to).map((it, j) => {
+    const i = from + j, past = nx < 0 || i < nx;
     const go = it.kind === 'sport' && !it.done ? ` data-act="${it.pid === 'express' ? 'go' : 'prog'}" data-arg="${it.pid}"` : '';
-    return `<div class="tl-row ${past ? 'past' : i === nx ? 'next' : ''}" style="${colStyle(it.col)};--i:${i}"${go}><span class="tl-time">${fmtM(it.t)}</span><span class="tl-dot"></span><div class="tl-tx"><b>${it.e} ${esc(it.n)}${bells && it.notify && !past ? ' <span class="bell-s" aria-label="avec rappel">🔔</span>' : ''}</b><span>${esc(it.s)}</span>${i === nx ? `<span class="tag" data-rel="${it.t}" data-end="${it.end || ''}">${relTxt(it.t, it.end)}</span>` : ''}</div></div>`;
+    return `<div class="tl-row ${past ? 'past' : i === nx ? 'next' : ''}" style="${colStyle(it.col)};--i:${j}"${go}><span class="tl-time">${fmtM(it.t)}</span><span class="tl-dot"></span><div class="tl-tx"><b>${it.e} ${esc(it.n)}${bells && it.notify && !past ? ' <span class="bell-s" aria-label="avec rappel">🔔</span>' : ''}</b><span>${esc(it.s)}</span>${i === nx ? `<span class="tag" data-rel="${it.t}" data-end="${it.end || ''}">${relTxt(it.t, it.end)}</span>` : ''}</div></div>`;
   }).join('');
 }
 function openPlan() {
@@ -2013,10 +2099,10 @@ function openPlan() {
   if (!pl) return openBonjour(false);
   const dateLong = cap(new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }));
   openSheet(`
-    <div class="sheet-head"><p class="eyebrow">Programme du jour · ${dateLong}</p><h2>Ta journée</h2></div>
+    <div class="sheet-head"><p class="eyebrow">Programme du jour · ${dateLong}</p><h2>${cap(dayPart(nowMin()))}</h2></div>
     ${sumHTML(pl)}
     <div class="notif-slot">${notifCardHTML(pl)}</div>
-    <div class="tl plan-tl">${planRows(pl)}</div>
+    <div class="plan-wrap">${planTimeline(pl)}</div>
     <div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-open">Modifier</button><button class="btn btn-primary" data-act="close-sheet">OK</button></div>`,
   { kind: 'plan', cls: 'tall' });
 }
@@ -2066,7 +2152,7 @@ function refreshNotifUI() {
   const pl = planFor(today());
   $$('.notif-slot').forEach(el => { el.innerHTML = notifCardHTML(pl); });
   $$('.notif-row').forEach(el => { el.innerHTML = notifSettingsRow(); });
-  if (SHEET && SHEET.opts.kind === 'plan' && pl) { const tl = $('.sheet .plan-tl'); if (tl) tl.innerHTML = planRows(pl); }
+  if (pl) $$('.sheet .plan-wrap').forEach(el => { el.innerHTML = planTimeline(pl); });
   if (UI.tab === 'accueil') render();
 }
 async function enableNotifs() {
@@ -2610,6 +2696,13 @@ const ACT = {
   'bj-del'(i) { BJ.d.acts.splice(+i, 1); bjRefresh(); },
   'bj-meal'(arg) { const [i, m] = arg.split('|'), a = BJ.d.acts[+i]; a.meal = m; a.from = MEALS[m][1]; bjRefresh(); },
   'bj-pick'(arg) { const [i, f, v] = arg.split('|'); BJ.d.acts[+i][f] = v; bjRefresh(); },
+  'bj-mst'(arg) { const [m, s] = arg.split('|'), L = BJ.d.meals[m] = BJ.d.meals[m] || {}; L.s = s; if (s === 'skip') L.items = []; bjRefresh(); },
+  'bj-mplace'(arg) { const [m, p] = arg.split('|'); BJ.d.meals[m].place = p; bjRefresh(); },
+  'bj-mitem'(arg) {
+    const [m, p] = arg.split('|'), L = BJ.d.meals[m], list = L.items = L.items || [], i = list.indexOf(p);
+    if (i >= 0) list.splice(i, 1); else list.push(p);
+    bjRefresh();
+  },
   'notif-on'() { enableNotifs(); },
   'notif-later'() { NOTIF.later = today(); saveNotif(); refreshNotifUI(); },
   'notif-toggle'(_, el) { el.classList.toggle('on'); if (notifMode() === 'on') disableNotifs(); else enableNotifs(); },
@@ -2682,6 +2775,9 @@ document.addEventListener('input', e => {
     if (k === 'acts') {
       BJ.d.acts[+i][f] = v;
       $$(`#bj [data-act="bj-pick"][data-arg^="${i}|${f}|"]`).forEach(c => c.classList.toggle('on', c.dataset.arg.split('|')[2] === v));
+    } else if (k === 'meals') {
+      BJ.d.meals[i][f] = v;
+      $$(`#bj [data-act="bj-mplace"][data-arg^="${i}|"]`).forEach(c => c.classList.toggle('on', c.dataset.arg.split('|')[1] === v));
     } else {
       BJ.d[k] = v;
       const box = $('#bj-sleep');

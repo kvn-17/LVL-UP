@@ -1,5 +1,5 @@
 // LVL UP : cache hors-ligne. VERSION change à chaque build, ce qui installe la nouvelle version.
-const VERSION = 'lvlup-9351a57fac';
+const VERSION = 'lvlup-ec22bd4cf1';
 const FONTS = 'lvlup-fonts';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/apple-touch-icon.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
@@ -19,7 +19,18 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin === location.origin) {
+  if (url.origin === location.origin && req.mode === 'navigate') {
+    // la page : la dernière version en ligne (4 s max), sinon celle du cache pour marcher hors-ligne
+    const fromNet = fetch(req, { cache: 'no-store' }).then(res => {
+      if (res.ok) { const copy = res.clone(); caches.open(VERSION).then(c => c.put('./', copy)); }
+      return res;
+    });
+    fromNet.catch(() => {});
+    const fromCache = () => caches.match(req, { ignoreSearch: true }).then(hit => hit || caches.match('./'));
+    e.respondWith(Promise.race([fromNet, new Promise(r => setTimeout(r, 4000))])
+      .then(res => res || fromCache().then(hit => hit || fromNet))
+      .catch(() => fromCache()));
+  } else if (url.origin === location.origin) {
     e.respondWith(caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req)));
   } else if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith(caches.open(FONTS).then(c => c.match(req).then(hit => hit || fetch(req).then(res => {
