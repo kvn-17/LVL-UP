@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
+<script>window.LVLUP_PWA = true;</script>
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
 <body>
@@ -509,6 +510,122 @@ details.rules[open] summary .i { transform: rotate(90deg); }
 .dots i.ko { background: var(--bad); }
 .dots i.cur { background: var(--text); }
 
+/* programme du jour */
+.day-cta { display: flex; align-items: center; gap: 14px; text-align: left; width: 100%; transition: transform .18s var(--ease); background: linear-gradient(140deg, var(--amber-s), var(--surface) 62%); }
+.day-cta:active { transform: scale(.98); }
+.day-cta .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.day-cta .tx b { font-family: var(--font-display); font-size: 16px; }
+.day-cta .tx span { font-size: 13.5px; color: var(--muted); }
+.day-cta > .i { color: var(--amber); }
+.sun { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; font-size: 26px; background: var(--amber-s); flex: none; animation: bob 3.4s ease-in-out infinite; }
+.day-card { display: flex; flex-direction: column; gap: 12px; }
+.day-h { display: flex; align-items: center; gap: 12px; }
+.day-h .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.day-h .tx b { font-family: var(--font-display); font-size: 16px; }
+.day-h .tx span { font-size: 13px; color: var(--muted); }
+.day-h .sun { width: 42px; height: 42px; font-size: 21px; border-radius: 14px; animation: none; }
+.day-next { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-md); background: linear-gradient(120deg, var(--cs), transparent 85%); border: 1px solid var(--line-2); text-align: left; width: 100%; transition: transform .18s var(--ease); }
+.day-next:active { transform: scale(.98); }
+.day-next .e { font-size: 26px; line-height: 1; flex: none; }
+.day-next .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.day-next .tx b { font-size: 15.5px; }
+.day-next .tx span { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day-next .when { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--c); white-space: nowrap; flex: none; }
+.day-mini { list-style: none; margin: 0; padding: 0 2px; display: flex; flex-direction: column; gap: 7px; font-size: 14px; }
+.day-mini li { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.day-mini time { width: 50px; flex: none; color: var(--muted); font-weight: 700; font-size: 13px; font-variant-numeric: tabular-nums; }
+.day-mini span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day-done { font-size: 14px; color: var(--muted); }
+.sheet.tall { min-height: min(86vh, 720px); }
+.bj { display: flex; flex-direction: column; gap: 16px; }
+.bj.go-fwd { animation: bjFwd .42s var(--ease) both; }
+.bj.go-back { animation: bjBack .42s var(--ease) both; }
+.bj.go-fade { animation: rise .45s var(--ease) both; }
+@keyframes bjFwd { from { opacity: 0; transform: translateX(28px); } }
+@keyframes bjBack { from { opacity: 0; transform: translateX(-28px); } }
+.bj-dots { display: flex; justify-content: center; gap: 6px; }
+.bj-dots i { width: 22px; height: 5px; border-radius: 9px; background: var(--surface-3); transition: background .3s, width .4s var(--spring); }
+.bj-dots i.done { background: var(--muted); }
+.bj-dots i.on { background: var(--led); width: 38px; }
+.bj-sky { position: relative; height: 112px; display: grid; place-items: end center; overflow: hidden; border-radius: var(--r-lg); background: radial-gradient(120% 90% at 50% 100%, rgba(255, 122, 89, .32), rgba(255, 184, 77, .08) 55%, transparent 80%); }
+.bj-sky span { font-size: 66px; line-height: 1; margin-bottom: 6px; animation: sunrise 1.5s var(--spring) both; filter: drop-shadow(0 0 26px rgba(255, 184, 77, .7)); }
+.bj-sky::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: var(--bg-2); border-top: 1px solid rgba(255, 184, 77, .35); box-shadow: 0 -8px 24px -6px rgba(255, 122, 89, .4); }
+@keyframes sunrise { from { transform: translateY(64px) scale(.75); opacity: 0; } }
+.timebox { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line-2); }
+.timebox > span { font-size: 14px; font-weight: 700; color: var(--muted); text-align: center; }
+.timebox input { width: 100%; min-height: 64px; border: 0; background: transparent; color: var(--text); font-family: var(--font-display); font-size: 46px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; outline: none; -webkit-appearance: none; appearance: none; }
+.timebox input::-webkit-date-and-time-value { text-align: center; }
+.timebox input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .45; }
+.timebox:focus-within { border-color: var(--cyan); }
+.field input[type="time"] { font-variant-numeric: tabular-nums; -webkit-appearance: none; appearance: none; }
+.field input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .45; }
+.sleep-card { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: var(--r-md); background: var(--cs); animation: rise .4s var(--ease) both; }
+.sc-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; font-weight: 700; color: var(--muted); }
+.sc-top b { font-family: var(--font-display); font-size: 24px; color: var(--c); }
+.sc-bar { position: relative; height: 8px; border-radius: 9px; background: rgba(0, 0, 0, .25); }
+.sc-bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: var(--c); box-shadow: 0 0 10px var(--c); transition: width .6s var(--spring); }
+.sc-bar em { position: absolute; top: -4px; bottom: -4px; width: 2px; border-radius: 2px; background: var(--text); opacity: .7; }
+.sleep-card p { font-size: 14px; }
+.act-add { display: flex; flex-wrap: wrap; gap: 8px; }
+.act-add .chip { height: 38px; padding: 0 13px 0 10px; color: var(--text); background: var(--surface-2); }
+.act-add .chip .i { width: 16px; height: 16px; color: var(--muted); }
+.act-add .chip:active { transform: scale(.94); }
+.acts { display: flex; flex-direction: column; gap: 10px; }
+.act { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--c); border-radius: var(--r-lg); padding: 14px; display: flex; flex-direction: column; gap: 10px; animation: rise .4s var(--ease) both; }
+.act-h { display: flex; align-items: center; gap: 10px; }
+.act-h .e { font-size: 22px; line-height: 1; }
+.act-h b { flex: 1; font-size: 15px; }
+.act-x { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); flex: none; }
+.act-x .i { width: 16px; height: 16px; }
+.act .seg-mini { display: flex; }
+.act .seg-mini button { flex: 1; padding: 0 4px; }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.picks .chip { height: 30px; padding: 0 11px; font-size: 13px; }
+.bj-empty { text-align: center; color: var(--muted); font-size: 14px; padding: 20px 16px; border: 1px dashed var(--line-2); border-radius: var(--r-md); }
+.calc { display: grid; place-items: center; gap: 16px; padding: 70px 0 60px; text-align: center; }
+.calc .orbit { width: 86px; height: 86px; border-radius: 50%; background: conic-gradient(from var(--a), var(--pink), var(--violet), var(--cyan), var(--lime), var(--amber), var(--pink)); animation: ledspin 1.1s linear infinite; -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px)); mask: radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px)); filter: drop-shadow(0 0 14px rgba(255, 79, 193, .5)); }
+.calc p { font-weight: 700; color: var(--muted); }
+.sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sum > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sum span { font-size: 11.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+.sum b { font-family: var(--font-display); font-size: 16px; color: var(--c, var(--text)); white-space: nowrap; }
+.sleep-msg { font-size: 14px; padding: 10px 14px; border-radius: var(--r-md); background: var(--cs); }
+.plan-tl { padding-top: 4px; }
+.plan-tl .tl-row { animation: rise .5s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.plan-tl .tl-row[data-act] { cursor: pointer; }
+.tl-row.past .tl-time, .tl-row.past .tl-tx b { color: var(--dim); }
+.tl-row.past .tl-tx span { color: var(--dim); }
+.tl-row.past .tl-dot::before { background: var(--surface-3); box-shadow: none; }
+.tl-row.next .tl-dot::before { left: 0; top: 3px; width: 14px; height: 14px; box-shadow: 0 0 0 4px var(--cs), 0 0 16px var(--c); animation: blink 1.6s ease-in-out infinite; }
+.tl-row.next .tl-time { color: var(--text); }
+.tl-tx .tag { align-self: flex-start; margin-top: 6px; }
+.bell-s { font-size: 11px; opacity: .75; margin-left: 2px; }
+.notif-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--r-lg); background: linear-gradient(150deg, var(--violet-s), var(--surface) 70%); border: 1px solid var(--line-2); }
+.notif-card .nh { display: flex; gap: 12px; align-items: flex-start; }
+.notif-card .nh b { display: block; font-family: var(--font-display); font-size: 15.5px; margin-bottom: 3px; }
+.notif-card .nh p { font-size: 14px; color: var(--muted); }
+.notif-card .bell { font-size: 28px; line-height: 1; flex: none; animation: ring 2.8s ease-in-out infinite; transform-origin: 50% 8%; }
+@keyframes ring { 0%, 64%, 100% { transform: rotate(0); } 70% { transform: rotate(16deg); } 76% { transform: rotate(-13deg); } 82% { transform: rotate(8deg); } 88% { transform: rotate(-4deg); } }
+.notif-card .sheet-actions .btn { min-height: 46px; font-size: 15px; }
+.nmock { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 20px; background: rgba(244, 241, 255, .09); border: 1px solid var(--line-2); animation: nIn .8s var(--spring) .25s both; }
+@keyframes nIn { from { transform: translateY(-16px) scale(.95); opacity: 0; } }
+.nm-ic { width: 38px; height: 38px; border-radius: 10px; flex: none; background: linear-gradient(135deg, #1C1733, #100D1F); box-shadow: inset 0 0 0 1px var(--line-2); display: grid; place-items: center; }
+.nm-ic svg { width: 24px; height: 24px; }
+.nm-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.nm-h { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: .02em; }
+.nm-tx b { font-size: 14px; }
+.nm-tx > span { font-size: 13.5px; color: var(--muted); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.notif-line { display: flex; gap: 10px; align-items: center; font-size: 13.5px; color: var(--muted); padding: 10px 14px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); }
+.sleep-bars { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; height: 132px; margin-top: 4px; }
+.sb { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; }
+.sb i { width: 100%; max-width: 30px; border-radius: 8px 8px 6px 6px; background: var(--surface-2); transform-origin: bottom; animation: grow .8s var(--spring) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.sb i.on { background: var(--c); box-shadow: 0 0 14px -3px var(--c); }
+@keyframes grow { from { transform: scaleY(0); } }
+.sb span { height: 14px; line-height: 14px; font-size: 11px; font-weight: 700; color: var(--dim); }
+.sb.tdy span { color: var(--text); }
+.sb-goal { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--lime); opacity: .75; pointer-events: none; }
+.sb-goal::after { content: "9 h"; position: absolute; right: 0; top: -17px; font-size: 10.5px; font-weight: 800; color: var(--lime); font-style: normal; }
+
 /* toasts & confettis */
 #toasts { position: fixed; left: 0; right: 0; top: calc(10px + env(safe-area-inset-top, 0px)); z-index: 90; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .toast { display: flex; flex-direction: column; align-items: center; background: var(--text); color: var(--ink); font-weight: 800; font-size: 14px; padding: 10px 18px; border-radius: 22px; box-shadow: 0 12px 30px rgba(0, 0, 0, .45); animation: tIn .5s var(--spring) both, tOut .35s ease 2.5s forwards; max-width: 100%; text-align: center; }
@@ -773,7 +890,7 @@ function defaultState() {
     profile: { name: '', birth: SEED.birth, lvl: 1, sound: true, start: t, par: { f: '', m: '', sex: '' } },
     weights: [{ d: t, kg: SEED.kg }], heights: [{ d: t, cm: SEED.cm }],
     workouts: [], habits: {}, water: {}, flags: {}, xp: 0,
-    games: { nose: 0, reflex: 0, quiz: 0, spins: {} }, badges: {}, asked: { w: '', h: '' },
+    games: { nose: 0, reflex: 0, quiz: 0, spins: {} }, badges: {}, asked: { w: '', h: '', b: '' }, days: {},
   };
 }
 function migrate(o) {
@@ -784,9 +901,9 @@ function migrate(o) {
   out.profile.par = Object.assign({ f: '', m: '', sex: '' }, (o.profile && o.profile.par) || {});
   out.games = Object.assign(defaultState().games, o.games || {});
   if (!out.games.spins || typeof out.games.spins !== 'object') out.games.spins = {};
-  out.asked = Object.assign({ w: '', h: '' }, o.asked || {});
+  out.asked = Object.assign({ w: '', h: '', b: '' }, o.asked || {});
   ['weights', 'heights', 'workouts'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
-  ['habits', 'water', 'badges', 'flags'].forEach(k => { if (!out[k] || typeof out[k] !== 'object') out[k] = {}; });
+  ['habits', 'water', 'badges', 'flags', 'days'].forEach(k => { if (!out[k] || typeof out[k] !== 'object') out[k] = {}; });
   return out;
 }
 function loadLocal() { try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
@@ -868,6 +985,185 @@ function activeDays() { const s = new Set(); S.weights.forEach(e => s.add(e.d));
 function streak() { const s = activeDays(); let k = today(), n = 0; if (!s.has(k)) k = addDays(k, -1); while (s.has(k)) { n++; k = addDays(k, -1); } return n; }
 function bestStreak() { let best = 0, cur = 0, prev = null; [...activeDays()].sort().forEach(d => { cur = prev && daysBetween(prev, d) === 1 ? cur + 1 : 1; best = Math.max(best, cur); prev = d; }); return best; }
 
+/* ============ programme du jour : calcul ============ */
+// Heures en minutes depuis minuit ('07:30' ↔ 450)
+const toMin = hm => { const m = /^(\d{1,2}):(\d{2})/.exec(hm || ''); return m ? +m[1] * 60 + +m[2] : NaN; };
+const toHM = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`; };
+const hTxt = m => `${Math.floor(m / 60)} h${m % 60 ? ' ' + pad2(m % 60) : ''}`;
+const fmtM = m => hTxt(((Math.round(m) % 1440) + 1440) % 1440);
+const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+const epochOf = (key, min) => { const [y, mo, d] = key.split('-').map(Number); return new Date(y, mo - 1, d, 0, min).getTime(); };
+
+const ACT_TYPES = {
+  school:  { e: '🏫', n: 'Cours', col: 'violet', from: '08:00', to: '17:00' },
+  food:    { e: '🍔', n: 'Manger dehors', col: 'amber' },
+  friends: { e: '👥', n: 'Sortie entre amis', col: 'cyan', from: '14:00', to: '17:00', picks: ['Foot', 'Basket', 'Vélo', 'Skate', 'Piscine', 'Parc', 'Ciné', 'Centre commercial', 'Jeux vidéo', 'Balade'] },
+  club:    { e: '⚽', n: 'Sport en club', col: 'lime', from: '17:00', to: '18:30', picks: ['Foot', 'Basket', 'Natation', 'Judo', 'Danse', 'Tennis', 'Rugby', 'Athlé', 'Boxe', 'Hand'] },
+  other:   { e: '📌', n: 'Autre', col: 'pink', from: '10:00', to: '11:00', picks: ['Devoirs', 'Médecin', 'Dentiste', 'Courses', 'Famille', 'Musique'] },
+};
+const MEALS = { pdj: ['Petit-déj', '08:00'], dej: ['Déjeuner', '12:30'], gouter: ['Goûter', '16:30'], diner: ['Dîner', '19:30'] };
+const PLACES = ['McDo', 'KFC', 'Burger King', 'Kebab', 'Pizzeria', 'Sushi', 'Boulangerie', 'Chez des amis', 'En famille'];
+const SPORTY = /foot|basket|v[ée]lo|skate|piscine|natation|nage|judo|danse|tennis|rugby|athl|boxe|hand|course|running|roller|trott|escalade|karat|gym|badminton|volley|ping|surf|ski|rando/i;
+const FAST = /mac ?do|mcdo|mc ?donald|burger|\bbk\b|quick|five guys|kfc|kebab|tacos|pizz/i;
+
+function placeEmoji(p) {
+  const s = p || '';
+  if (/kfc|poulet|chicken/i.test(s)) return '🍗';
+  if (/kebab|tacos|grec/i.test(s)) return '🌯';
+  if (/pizz/i.test(s)) return '🍕';
+  if (/sushi|japon|maki/i.test(s)) return '🍣';
+  if (/boulang|sandwich/i.test(s)) return '🥖';
+  if (/ami|pote|famille|mamie|papi|grand|chez/i.test(s)) return '🏠';
+  if (FAST.test(s)) return '🍔';
+  return '🍽️';
+}
+// Conseils pour manger dehors : jamais de restriction, un ado en croissance a besoin d'énergie
+function placeTip(p) {
+  const s = p || '';
+  if (/kfc|poulet|chicken/i.test(s)) return 'Le poulet, c’est plein de protéines 👍 Ajoute du maïs ou de la salade si tu peux.';
+  if (/kebab|tacos|grec/i.test(s)) return 'La viande t’apporte des protéines. Garde les crudités, et de l’eau pour boire.';
+  if (/pizz/i.test(s)) return 'Une pizza avec jambon, œuf, thon ou poulet, plus une salade : c’est un vrai repas.';
+  if (/sushi|japon|maki/i.test(s)) return 'Riz + poisson : top pour l’énergie et les protéines.';
+  if (/boulang|sandwich/i.test(s)) return 'Un sandwich jambon-fromage ou poulet, et un fruit ou un laitage : parfait.';
+  if (/cantine|self/i.test(s)) return 'Prends l’entrée, le plat ET le laitage : tu as besoin de tout ça pour grandir.';
+  if (/ami|pote|famille|mamie|papi|grand|chez/i.test(s)) return 'Profite, et mange à ta faim 😊';
+  if (FAST.test(s)) return 'Un burger avec viande, poulet ou poisson pour les protéines, et de l’eau ou un lait plutôt qu’un soda si tu peux.';
+  return 'Mange à ta faim, avec une source de protéines (viande, poisson, œufs, fromage) et de l’eau.';
+}
+
+function sleepMin(d) {
+  const s = toMin(d && d.sleep), w = toMin(d && d.wake);
+  if (isNaN(s) || isNaN(w)) return null;
+  const m = (w - s + 1440) % 1440;
+  return m >= 60 ? m : null;
+}
+function sleepVerdict(m) {
+  if (m >= 540) return { col: 'lime', txt: m > 690 ? 'Grosse nuit 🌙 Ton corps en avait besoin.' : 'Parfait 🌙 Ton corps a eu le temps de grandir cette nuit.' };
+  if (m >= 480) return { col: 'cyan', txt: 'Bien ! Encore un peu plus et c’est l’idéal : 9 h.' };
+  if (m >= 420) return { col: 'amber', txt: 'Un peu court. Ce soir, vise un coucher plus tôt.' };
+  return { col: 'coral', txt: 'Nuit trop courte 😴 Ce soir, couche-toi tôt : c’est la nuit que tu grandis.' };
+}
+
+// Premier créneau libre de `dur` minutes le plus proche de `pref`, entre lo et hi, hors des blocs occupés
+function findSlot(dur, pref, lo, hi, blocks) {
+  let best = null;
+  for (let c = Math.ceil(lo / 15) * 15; c + dur <= hi; c += 15) {
+    if (blocks.some(b => c < b[1] && c + dur > b[0])) continue;
+    const sc = Math.abs(c - pref);
+    if (best === null || sc < best.sc) best = { c, sc };
+  }
+  return best ? best.c : null;
+}
+
+// Calcule la journée : repas, séance, eau, écrans, coucher, autour des activités prévues
+function planFor(key) {
+  const D = S.days[key];
+  if (!D) return null;
+  const W = toMin(D.wake), N = isNaN(toMin(D.next)) ? W : toMin(D.next);
+  if (isNaN(W)) return null;
+  const slept = sleepMin(D);
+  // au lit 9 h 15 avant le réveil de demain (9 h de sommeil + le temps de s'endormir), entre 20 h 30 et 22 h 45
+  const bed = clamp(N + 1440 - 555, 1230, 1365);
+  const acts = (D.acts || []).map(a => Object.assign({}, a, { f: toMin(a.from), t: a.k === 'food' ? toMin(a.from) + 60 : toMin(a.to) })).filter(a => !isNaN(a.f) && !isNaN(a.t) && a.t > a.f);
+  const busy = acts.filter(a => a.k !== 'food');
+  const school = busy.find(a => a.k === 'school');
+  const inBusy = (m, ks) => busy.find(b => m >= b.f && m < b.t && (!ks || ks.includes(b.k)));
+  const foodOf = m => acts.find(a => a.k === 'food' && a.meal === m);
+  const items = [];
+  const add = (t, e, n, s, col, o) => items.push(Object.assign({ t: Math.round(t), e, n, s, col, notify: true }, o));
+  const out = (f, label) => add(f.f, placeEmoji(f.place), `${label} · ${(f.place || 'dehors').trim()}`, placeTip(f.place), 'amber', { kind: 'meal' });
+
+  add(W, '☀️', 'Réveil', 'Ouvre les volets : la lumière du jour règle ton horloge interne', 'amber', { notify: false, kind: 'wake' });
+
+  let f = foodOf('pdj'), bk;
+  if (f) { bk = f.f; out(f, 'Petit-déj'); }
+  else {
+    bk = W + 20;
+    const first = busy.filter(b => b.f > W).sort((a, b) => a.f - b.f)[0];
+    if (first && bk > first.f - 20) bk = Math.max(W + 5, first.f - 25);
+    add(bk, '🍳', 'Petit-déjeuner', 'Céréales ou pain, un produit laitier, un fruit. Ne le saute jamais !', 'amber', { kind: 'meal' });
+  }
+
+  const fl = foodOf('dej');
+  let lu = 750;
+  if (fl) { lu = fl.f; out(fl, 'Déjeuner'); }
+  else if (school && school.f <= 720 && school.t >= 780) { lu = 720; add(lu, '🍽️', 'Déjeuner à la cantine', placeTip('cantine'), 'pink', { notify: false, kind: 'meal' }); }
+  else {
+    const b = inBusy(lu);
+    if (b && b.t <= 840) lu = b.t + 10;
+    add(lu, '🍽️', 'Déjeuner', b && lu < b.t ? 'Pendant ta sortie : prends un vrai repas, pas juste des chips 🥪' : 'Féculents, protéines, légumes et un produit laitier', 'pink', { kind: 'meal' });
+  }
+
+  f = foodOf('gouter');
+  let go = 990;
+  if (f) { go = f.f; out(f, 'Goûter'); }
+  else {
+    if (school && school.t >= 930 && school.t <= 1080) go = school.t + 15;
+    const away = inBusy(go, ['friends', 'club', 'other']);
+    add(go, '🍪', 'Goûter', away ? 'Emporte-le : un fruit et du pain avec du chocolat, ou une barre de céréales' : 'Le repas clé pour faire du muscle : pain, fromage ou beurre de cacahuète, lait, fruit', 'lime', { kind: 'meal' });
+  }
+
+  f = foodOf('diner');
+  let di = clamp(bed - 135, 1110, 1170);
+  if (f) { di = f.f; out(f, 'Dîner'); }
+  else {
+    const b = inBusy(di);
+    if (b && b.t + 15 <= bed - 60) di = b.t + 15;
+    add(di, '🍝', 'Dîner', fl && FAST.test(fl.place || '') ? 'Légumes, féculents, protéines et un fruit. Pas besoin de manger moins : ton corps grandit.' : 'Comme le déjeuner : féculents, protéines, légumes, laitage', 'coral', { kind: 'meal' });
+  }
+
+  busy.forEach(a => {
+    const what = (a.what || '').trim(), until = `Jusqu’à ${fmtM(a.t)}`;
+    if (a.k === 'school') add(a.f, '🏫', 'Cours', until, 'violet', { notify: false, end: a.t, kind: 'act' });
+    else if (a.k === 'friends') add(a.f, '👥', what ? `Sortie : ${what}` : 'Sortie entre amis', `${until} · ${SPORTY.test(what) ? 'prends ta gourde 💧' : 'pense à bouger un peu'} et dis à tes parents quand tu rentres`, 'cyan', { end: a.t, kind: 'act' });
+    else if (a.k === 'club') add(a.f, '⚽', what || 'Sport en club', `${until} · gourde 💧 et goûter dans le sac`, 'lime', { end: a.t, kind: 'act' });
+    else add(a.f, '📌', what || 'Activité', until, 'pink', { end: a.t, kind: 'act' });
+  });
+
+  // séance : jamais juste après un repas ni trop près du coucher ; étirements si tu fais déjà du sport.
+  // Les étirements doux (light) peuvent se faire peu après un repas et jusqu'à 30 min avant le coucher.
+  const blocksFor = light => busy.map(b => [b.f - 15, b.t + 15]).concat(
+    acts.filter(a => a.k === 'food').map(a => [a.f, a.f + (light ? 40 : 75)]),
+    [[bk, bk + 45], [lu, lu + (light ? 30 : 90)], [go, go + 30], [di - 15, di + (light ? 40 : 90)]]);
+  const blocks = blocksFor(false);
+  const sporty = busy.filter(a => (a.k === 'club' || SPORTY.test(a.what || '')) && a.t - a.f >= 45).sort((a, b) => b.t - a.t)[0];
+  const done = S.workouts.some(w => w.d === key);
+  let pid = WEEK[parseKey(key).getDay()], pref = go + 75, label = null;
+  if (sporty) { pid = 'posture'; pref = sporty.t + 30; label = `Étirements après ${(sporty.what || 'ton sport').trim()}`; }
+  else if (pid === 'repos') pid = null;
+  // pas de séance placée avant le moment où la journée a été préparée
+  const at = D.at ? new Date(D.at) : null, atMin = at && keyOf(at) === key ? at.getHours() * 60 + at.getMinutes() + 15 : 0;
+  const lo = Math.max(W + 60, 540, atMin), hi = bed - 90;
+  if (pid === 'libre') {
+    const c = findSlot(30, pref, lo, hi, blocks);
+    if (c !== null) add(c, '⚽', 'Bouge dehors 30 min', 'Vélo, foot, basket, roller… ou l’Express 7 min si tu restes à la maison', 'cyan', { kind: 'sport', pid: 'express', done, notify: !done, end: c + 30 });
+  } else if (pid) {
+    const light = pid === 'posture';
+    let dur = estimateMin(buildSteps(pid, S.profile.lvl)), c = findSlot(dur, pref, lo, light ? bed - 30 : hi, light ? blocksFor(true) : blocks);
+    if (c === null && pid !== 'express') { pid = 'express'; dur = estimateMin(buildSteps(pid, S.profile.lvl)); c = findSlot(dur, pref, lo, hi, blocks); label = 'Express 7 min (journée chargée)'; }
+    if (c !== null) { const PR = PROGS[pid]; add(c, PR.e, label || PR.n, done ? 'Séance faite ✓ Bravo !' : `≈ ${dur} min · ${PR.focus}`, PR.col, { kind: 'sport', pid, done, notify: !done, end: c + dur }); }
+  }
+
+  [630, 900].forEach(t => { if (!inBusy(t, ['school']) && !items.some(i => Math.abs(i.t - t) < 40)) add(t, '💧', 'Un grand verre d’eau', 'Ta gourde, ou deux verres d’un coup', 'cyan', { kind: 'water' }); });
+  if (slept !== null && slept < 390) {
+    const c = findSlot(20, 870, 810, 1020, blocks);
+    if (c !== null) add(c, '😴', 'Petite sieste (20 min max)', 'Pas plus, sinon tu dormiras moins bien ce soir', 'violet', { kind: 'nap', end: c + 20 });
+  }
+  add(bed - 60, '📵', 'Écrans coupés', 'Douche, sac, lecture… tu t’endormiras plus vite', 'violet', { kind: 'night' });
+  add(bed, '🛏️', 'Au lit', `Réveil à ${fmtM(N)} demain : ${hTxt(N + 1440 - bed)} de nuit 🌙`, 'violet', { kind: 'night' });
+
+  items.sort((a, b) => a.t - b.t);
+  return { items, bed, W, N, slept, rest: !items.some(i => i.kind === 'sport') };
+}
+// Index du moment en cours ou à venir (-1 : journée terminée)
+function nextIdx(pl, n = nowMin()) { return pl.items.findIndex(it => (it.end || it.t + 10) > n); }
+function relTxt(t, end) {
+  const n = nowMin();
+  if (t <= n) return end && end > n ? 'en cours' : 'maintenant';
+  const d = t - n;
+  return d < 60 ? `dans ${d} min` : `dans ${hTxt(d)}`;
+}
+
 const BADGES = [
   { id: 'w1', e: '⚖️', n: 'Première pesée', d: 'Note ton poids pour la première fois.', t: () => S.weights.length >= 2 || !!S.flags['checkin'] },
   { id: 's1', e: '🏁', n: 'Première séance', d: 'Termine une séance complète.', t: () => S.workouts.length >= 1 },
@@ -885,6 +1181,8 @@ const BADGES = [
   { id: 'nose', e: '👃', n: 'Nez d’acier', d: '25 nez-pompes d’affilée.', t: () => S.games.nose >= 25 },
   { id: 'ninja', e: '⚡', n: 'Réflexes de ninja', d: 'Moyenne sous 300 ms au jeu Réflexe.', t: () => S.games.reflex > 0 && S.games.reflex < 300 },
   { id: 'posture', e: '🧘', n: 'Dos droit', d: 'Termine 5 séances Posture & Souplesse.', t: () => S.workouts.filter(w => w.id === 'posture').length >= 5 },
+  { id: 'plan7', e: '🗓️', n: 'Pro du planning', d: 'Prépare ta journée 7 fois.', t: () => Object.keys(S.days).length >= 7 },
+  { id: 'sleep9', e: '🌙', n: 'Dodo XXL', d: 'Dors 9 h ou plus pendant 3 nuits.', t: () => Object.values(S.days).filter(d => (sleepMin(d) || 0) >= 540).length >= 3 },
 ];
 
 /* ============ XP, badges, retours ============ */
@@ -1003,7 +1301,7 @@ const tgtText = st => {
 
 /* ============ interface : état local ============ */
 const TABS = ['accueil', 'sport', 'repas', 'jeux', 'progres'];
-const UI = { tab: TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'accueil', zone: 'all', rcat: 'all', wRange: 30, pendingDel: null, histAll: false, popHabit: null, confirmReset: false, shownLevel: levelInfo(S.xp).lv };
+const UI = { tab: TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'accueil', zone: 'all', rcat: 'all', wRange: 30, pendingDel: null, histAll: false, popHabit: null, confirmReset: false, shownLevel: levelInfo(S.xp).lv, remShown: {}, nextKey: null };
 let estT = null;
 let lastRenderDay = today();
 
@@ -1034,6 +1332,7 @@ function viewHome() {
     <button class="avatar" data-act="settings" aria-label="Profil et réglages, niveau ${L.lv}">${ring(L.cur / L.need, 54, 4, 'rgAv')}<span>${L.lv}</span><small>NIV</small></button>
   </header>
   ${bday ? `<div class="bday">${bday}</div>` : ''}
+  ${dayCardHTML()}
   ${heroCard()}
   <div class="stats">
     <button class="stat" data-act="height"><span class="k">Taille</span><span class="v"><span data-count="${lh ? lh.cm : 0}" data-dec="1">${lh ? fr(lh.cm) : '—'}</span><small>cm</small></span><span class="d ${gh > 0 ? 'up' : ''}">${signed(gh)} au total</span></button>
@@ -1060,6 +1359,18 @@ function viewHome() {
   <section>
     <div class="sec-h"><h2>Le savais-tu ?</h2></div>
     <div class="card tip"><span class="big">${tip[0]}</span><div><b>${tip[1]}</b><p>${tip[2]}</p></div></div>
+  </section>`;
+}
+function dayCardHTML() {
+  const key = today(), pl = planFor(key);
+  if (!pl) return `<button class="card day-cta" data-act="bj-open"><span class="sun">🌅</span><span class="tx"><b>Prépare ta journée</b><span>Ton sommeil, tes sorties, tes repas : je calcule ton programme et je te rappelle tout.</span></span>${ICON.chev}</button>`;
+  const i = nextIdx(pl), nx = pl.items[i], after = i >= 0 ? pl.items.slice(i + 1, i + 3) : [];
+  UI.nextKey = key + i;
+  return `<section class="card day-card">
+    <div class="day-h"><span class="sun">🗓️</span><div class="tx"><b>Ton programme</b><span>${pl.slept !== null ? `Nuit de ${hTxt(pl.slept)} · ` : ''}au lit à ${fmtM(pl.bed)}${notifMode() === 'on' ? ' · 🔔' : ''}</span></div></div>
+    ${nx ? `<button class="day-next" data-act="plan" style="${colStyle(nx.col)}"><span class="e">${nx.e}</span><span class="tx"><b>${esc(nx.n)}</b><span>${fmtM(nx.t)} · ${esc(nx.s)}</span></span><span class="when" data-rel="${nx.t}" data-end="${nx.end || ''}">${relTxt(nx.t, nx.end)}</span></button>` : '<p class="day-done">Journée terminée. Bonne nuit 🌙</p>'}
+    ${after.length ? `<ul class="day-mini">${after.map(it => `<li><time>${fmtM(it.t)}</time><span>${it.e} ${esc(it.n)}</span></li>`).join('')}</ul>` : ''}
+    <button class="btn btn-ghost btn-block" data-act="plan">Voir toute ma journée</button>
   </section>`;
 }
 function heroCard() {
@@ -1247,6 +1558,7 @@ function viewProgress() {
       <div><b>${activeDays().size}</b><span>jours actifs au total</span></div>
     </div>
   </section>
+  ${sleepHTML()}
   <section>
     <div class="sec-h"><h2>12 dernières semaines</h2></div>
     <div class="card">${heatmap()}
@@ -1264,6 +1576,23 @@ function viewProgress() {
   <section class="hist">
     <div class="sec-h"><h2>Historique</h2>${historyCount() > 7 ? `<button class="aside" data-act="histall" style="color:var(--cyan)">${UI.histAll ? 'Moins' : 'Tout voir'}</button>` : ''}</div>
     <div class="list">${historyRows()}</div>
+  </section>`;
+}
+function sleepHTML() {
+  const t = today(), keys = Array.from({ length: 7 }, (_, i) => addDays(t, i - 6));
+  const vals = keys.map(k => sleepMin(S.days[k]));
+  const known = vals.filter(v => v !== null);
+  if (!known.length) return '';
+  const avg = Math.round(known.reduce((a, v) => a + v, 0) / known.length), MAX = 660, H = 104;
+  return `<section>
+    <div class="sec-h"><h2>Ton sommeil</h2><span class="aside">moyenne ${hTxt(avg)}</span></div>
+    <div class="card">
+      <div class="sleep-bars">${keys.map((k, i) => {
+        const v = vals[i], V = v !== null ? sleepVerdict(v) : null;
+        return `<div class="sb ${k === t ? 'tdy' : ''}" title="${v !== null ? hTxt(v) : ''}"><i class="${V ? 'on' : ''}" style="height:${v !== null ? Math.max(6, Math.min(v, MAX) / MAX * H) : 6}px;--i:${i};${V ? colStyle(V.col) : ''}"></i><span>${cap(parseKey(k).toLocaleDateString('fr-FR', { weekday: 'narrow' }))}</span></div>`;
+      }).join('')}<em class="sb-goal" style="bottom:${20 + 540 / MAX * H}px"></em></div>
+      <p class="sub">Ligne verte : 9 h, l’objectif pour grandir. Note ta nuit chaque matin dans ton programme du jour.</p>
+    </div>
   </section>`;
 }
 function growthVelocity() {
@@ -1435,7 +1764,7 @@ function closeSheet(silent) {
 function closeSheetIfStale() {
   if (!SHEET) return;
   const k = SHEET.opts.kind, t = today();
-  if ((k === 'welcome' && S.onboarded) || (k === 'weigh' && SHEET.opts.prompt && S.weights.some(e => e.d === t))) closeSheet(true);
+  if ((k === 'welcome' && S.onboarded) || (k === 'weigh' && SHEET.opts.prompt && S.weights.some(e => e.d === t)) || (k === 'bonjour' && SHEET.opts.prompt && S.days[t] && BJ.step < 3)) closeSheet(true);
 }
 function bindGrab(sheet) {
   const grab = $('.grab', sheet);
@@ -1541,11 +1870,285 @@ function saveHeight() {
   checkBadges(); persist(); render();
 }
 
-// Démarrage : accueil, puis pesée du jour, puis taille toutes les deux semaines
+/* ---------- Bonjour : les questions du matin ---------- */
+const BJ = { step: 0, d: null, prompt: false, ready: false, tok: 0 };
+function bjDefaults() {
+  const t = today();
+  if (S.days[t]) return JSON.parse(JSON.stringify(S.days[t]));
+  const prev = S.days[addDays(t, -1)] || S.days[Object.keys(S.days).sort().pop()] || {};
+  const n = nowMin();
+  return { sleep: prev.sleep || '22:30', wake: n >= 300 && n < 690 ? toHM(Math.floor(n / 5) * 5) : prev.wake || '08:00', next: prev.next || '07:30', acts: [] };
+}
+function openBonjour(prompt) {
+  Object.assign(BJ, { d: bjDefaults(), step: 0, prompt, ready: false });
+  openSheet(`<div class="bj" id="bj">${bjStepHTML()}</div>`, { kind: 'bonjour', prompt, cls: 'tall', onClose: () => {
+    if (prompt && !S.days[today()]) { S.asked.b = today(); persist(); }
+    if (prompt) setTimeout(runPrompts, 450);
+  } });
+}
+function bjShow(step, dir) {
+  BJ.step = step;
+  if (step < 3) BJ.ready = false;
+  const box = $('#bj');
+  if (!box) return;
+  box.className = 'bj';
+  void box.offsetWidth;
+  if (dir) box.classList.add('go-' + dir);
+  box.innerHTML = bjStepHTML();
+  const sh = box.closest('.sheet');
+  if (sh) sh.scrollTop = 0;
+}
+const bjRefresh = () => { const box = $('#bj'); if (box) box.innerHTML = bjStepHTML(); };
+const bjDots = () => `<div class="bj-dots" aria-label="Étape ${BJ.step + 1} sur 4">${[0, 1, 2, 3].map(i => `<i class="${i === BJ.step ? 'on' : i < BJ.step ? 'done' : ''}"></i>`).join('')}</div>`;
+function sleepCardHTML() {
+  const m = sleepMin(BJ.d);
+  if (m === null) return '';
+  const v = sleepVerdict(m);
+  return `<div class="sleep-card" style="${colStyle(v.col)}"><div class="sc-top"><span>Tu as dormi</span><b>${hTxt(m)}</b></div><div class="sc-bar"><i style="width:${clamp(m / 660, 0, 1) * 100}%"></i><em style="left:${540 / 660 * 100}%"></em></div><p>${v.txt}</p></div>`;
+}
+function actCardHTML(a, i) {
+  const T = ACT_TYPES[a.k];
+  const time = (f, label) => `<label class="field"><span>${label}</span><input type="time" data-bj="acts.${i}.${f}" value="${esc(a[f] || '')}"></label>`;
+  const picks = (field, list) => `<div class="picks">${list.map(p => `<button class="chip ${a[field] === p ? 'on' : ''}" data-act="bj-pick" data-arg="${i}|${field}|${p}">${p}</button>`).join('')}</div>`;
+  let body;
+  if (a.k === 'food') {
+    body = `<div class="seg-mini" role="group" aria-label="Quel repas ?">${Object.entries(MEALS).map(([m, M]) => `<button class="${a.meal === m ? 'on' : ''}" data-act="bj-meal" data-arg="${i}|${m}">${M[0]}</button>`).join('')}</div>
+      <label class="field"><span>Où ?</span><input data-bj="acts.${i}.place" maxlength="30" autocomplete="off" placeholder="ex : McDo" value="${esc(a.place || '')}"></label>
+      ${picks('place', PLACES)}${time('from', 'Vers quelle heure ?')}`;
+  } else if (a.k === 'school') {
+    body = `<div class="field-row">${time('from', 'De')}${time('to', 'À')}</div>`;
+  } else {
+    const q = a.k === 'friends' ? ['Pour faire quoi ?', 'ex : foot au city'] : a.k === 'club' ? ['Quel sport ?', 'ex : judo'] : ['Quoi ?', 'ex : dentiste'];
+    body = `<label class="field"><span>${q[0]}</span><input data-bj="acts.${i}.what" maxlength="30" autocomplete="off" placeholder="${q[1]}" value="${esc(a.what || '')}"></label>
+      ${picks('what', T.picks)}<div class="field-row">${time('from', 'De')}${time('to', 'À')}</div>`;
+  }
+  return `<div class="act" style="${colStyle(T.col)}"><div class="act-h"><span class="e">${T.e}</span><b>${T.n}</b><button class="act-x" data-act="bj-del" data-arg="${i}" aria-label="Retirer">${ICON.close}</button></div>${body}</div>`;
+}
+function bjStepHTML() {
+  const d = BJ.d, name = S.profile.name.trim();
+  if (BJ.step === 0) {
+    const h = new Date().getHours();
+    return `${bjDots()}
+      <div class="bj-sky" aria-hidden="true"><span>${h >= 18 ? '🌆' : '🌅'}</span></div>
+      <div class="sheet-head center"><p class="eyebrow">Programme du jour</p><h2>${h >= 18 ? 'Bonsoir' : 'Bonjour'}${name ? ' ' + esc(name) : ''} !</h2><p>Trois questions rapides, et je prépare ta journée : repas, sport, coucher, avec un rappel 5 min avant chaque moment.</p></div>
+      <label class="timebox"><span>😴 Hier soir, tu dormais à quelle heure ?</span><input type="time" data-bj="sleep" value="${esc(d.sleep)}"></label>
+      <p class="fine center">Une estimation suffit : l’heure où tu as fermé les yeux.</p>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-act="${BJ.prompt ? 'bj-later' : 'close-sheet'}">${BJ.prompt ? 'Plus tard' : 'Annuler'}</button><button class="btn btn-primary" data-act="bj-next">Suivant</button></div>`;
+  }
+  if (BJ.step === 1) return `${bjDots()}
+      <div class="sheet-head center"><p class="eyebrow">Ton réveil</p><h2>Et ce matin, réveil à quelle heure ?</h2></div>
+      <label class="timebox"><span>⏰ Réveil</span><input type="time" data-bj="wake" value="${esc(d.wake)}"></label>
+      <div id="bj-sleep">${sleepCardHTML()}</div>
+      <label class="field"><span>Demain, tu te lèves à quelle heure ?</span><input type="time" data-bj="next" value="${esc(d.next)}"></label>
+      <p class="fine">Je m’en sers pour ton heure de coucher : il te faut environ 9 h de sommeil.</p>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-back">Retour</button><button class="btn btn-primary" data-act="bj-next">Suivant</button></div>`;
+  if (BJ.step === 2) return `${bjDots()}
+      <div class="sheet-head"><p class="eyebrow">Aujourd’hui</p><h2>Qu’est-ce que tu as de prévu ?</h2><p>Ajoute tout ce qui compte : cours, resto, sortie, entraînement…</p></div>
+      <div class="act-add">${Object.entries(ACT_TYPES).map(([k, T]) => `<button class="chip" data-act="bj-add" data-arg="${k}">${ICON.plus}${T.e} ${T.n}</button>`).join('')}</div>
+      <div class="acts">${d.acts.length ? d.acts.map(actCardHTML).join('') : '<p class="bj-empty">Rien de spécial ? Parfait, je m’occupe de tout ✨</p>'}</div>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-back">Retour</button><button class="btn btn-primary" data-act="bj-calc">Calculer</button></div>`;
+  if (!BJ.ready) {
+    const tok = ++BJ.tok;
+    setTimeout(() => { if (tok === BJ.tok && BJ.step === 3 && SHEET && SHEET.opts.kind === 'bonjour') { BJ.ready = true; bjShow(3, 'fade'); } }, reduced() ? 50 : 1200);
+    return `${bjDots()}<div class="calc"><div class="orbit"></div><p>Je calcule ta journée…</p></div>`;
+  }
+  const pl = planFor(today());
+  return `${bjDots()}
+    <div class="sheet-head center"><p class="eyebrow">C’est prêt</p><h2>Ta journée${name ? ', ' + esc(name) : ''}</h2></div>
+    ${sumHTML(pl)}
+    <div class="notif-slot">${notifCardHTML(pl)}</div>
+    <div class="tl plan-tl">${planRows(pl)}</div>
+    <button class="btn btn-primary btn-block" data-act="bj-done">C’est parti 🚀</button>`;
+}
+function bjValid() {
+  const d = BJ.d;
+  if (BJ.step === 0 && isNaN(toMin(d.sleep))) return toast('Indique à quelle heure tu dormais hier soir'), false;
+  if (BJ.step === 1) {
+    if (isNaN(toMin(d.wake))) return toast('Indique ton heure de réveil'), false;
+    if (sleepMin(d) === null) return toast('Vérifie tes heures de coucher et de réveil'), false;
+  }
+  if (BJ.step === 2) {
+    const bad = d.acts.find(a => isNaN(toMin(a.from)) || (a.k !== 'food' && !(toMin(a.to) > toMin(a.from))));
+    if (bad) return toast(`Vérifie les heures de « ${ACT_TYPES[bad.k].n} »`), false;
+  }
+  return true;
+}
+function saveBonjour() {
+  const t = today(), first = !S.days[t], d = BJ.d;
+  S.days[t] = { sleep: d.sleep, wake: d.wake, next: d.next, acts: d.acts.map(a => Object.assign({}, a)), at: Date.now() };
+  const keys = Object.keys(S.days).sort();
+  while (keys.length > 60) delete S.days[keys.shift()];
+  bjShow(3, 'fwd');
+  if (first) {
+    setTimeout(() => {
+      addXP(10, 'Journée préparée');
+      const m = sleepMin(S.days[t]), hab = S.habits[t] = S.habits[t] || [];
+      if (m !== null && m >= 540 && !hab.includes('sleep')) { hab.push('sleep'); setTimeout(() => addXP(5, 'Nuit de 9 h ✓'), 700); }
+      checkBadges(); persist(); render();
+    }, reduced() ? 100 : 1300);
+  }
+  persist(); render();
+  syncReminders();
+}
+
+/* ---------- Programme du jour ---------- */
+function sumHTML(pl) {
+  const v = pl.slept !== null ? sleepVerdict(pl.slept) : null, ses = pl.items.find(i => i.kind === 'sport');
+  return `<div class="sum">
+      <div style="${v ? colStyle(v.col) : ''}"><span>😴 Ta nuit</span><b>${pl.slept !== null ? hTxt(pl.slept) : '—'}</b></div>
+      <div><span>🏋️ Séance</span><b>${ses ? (ses.done ? 'Faite ✓' : fmtM(ses.t)) : 'Repos'}</b></div>
+      <div><span>🛏️ Au lit</span><b>${fmtM(pl.bed)}</b></div>
+    </div>${v ? `<p class="sleep-msg" style="${colStyle(v.col)}">${v.txt}</p>` : ''}`;
+}
+function planRows(pl) {
+  const n = nowMin(), nx = nextIdx(pl, n), bells = notifMode() === 'on';
+  return pl.items.map((it, i) => {
+    const past = nx < 0 || i < nx;
+    const go = it.kind === 'sport' && !it.done ? ` data-act="${it.pid === 'express' ? 'go' : 'prog'}" data-arg="${it.pid}"` : '';
+    return `<div class="tl-row ${past ? 'past' : i === nx ? 'next' : ''}" style="${colStyle(it.col)};--i:${i}"${go}><span class="tl-time">${fmtM(it.t)}</span><span class="tl-dot"></span><div class="tl-tx"><b>${it.e} ${esc(it.n)}${bells && it.notify && !past ? ' <span class="bell-s" aria-label="avec rappel">🔔</span>' : ''}</b><span>${esc(it.s)}</span>${i === nx ? `<span class="tag" data-rel="${it.t}" data-end="${it.end || ''}">${relTxt(it.t, it.end)}</span>` : ''}</div></div>`;
+  }).join('');
+}
+function openPlan() {
+  const key = today(), pl = planFor(key);
+  if (!pl) return openBonjour(false);
+  const dateLong = cap(new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }));
+  openSheet(`
+    <div class="sheet-head"><p class="eyebrow">Programme du jour · ${dateLong}</p><h2>Ta journée</h2></div>
+    ${sumHTML(pl)}
+    <div class="notif-slot">${notifCardHTML(pl)}</div>
+    <div class="tl plan-tl">${planRows(pl)}</div>
+    <div class="sheet-actions"><button class="btn btn-ghost" data-act="bj-open">Modifier</button><button class="btn btn-primary" data-act="close-sheet">OK</button></div>`,
+  { kind: 'plan', cls: 'tall' });
+}
+
+/* ---------- Notifications (version installée) ---------- */
+// Les rappels quand l'app est fermée passent par le serveur Supabase (Web Push) ; dans l'app ouverte, un toast suffit.
+const PUSH_CFG = { api: '', key: 'BHYRJk58wqqfIXcKOtlWcPqnAvB-8s0euEhIAoeFZZdfAvGdR5W7Opl6iVFxM2SGX9yqiQuSUjejXzVdmh6WFPk' };
+const NOTIF_LS = 'lvlup-notif-v1';
+const NOTIF = (() => { try { return JSON.parse(localStorage.getItem(NOTIF_LS)) || {}; } catch (e) { return {}; } })();
+function saveNotif() { try { localStorage.setItem(NOTIF_LS, JSON.stringify(NOTIF)); } catch (e) { /* stockage indisponible */ } }
+function notifMode() {
+  if (!window.LVLUP_PWA || !PUSH_CFG.api) return 'none';
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return ios && !standalone ? 'install' : 'none';
+  if (Notification.permission === 'denied') return 'denied';
+  return NOTIF.on && Notification.permission === 'granted' ? 'on' : 'off';
+}
+const b64uBytes = s => { const b = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), b => pad2(b.toString(16))).join(''));
+function pushApi(path, body) {
+  return fetch(`${PUSH_CFG.api}/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ device: NOTIF.device }, body)) })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+}
+const NM_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="nmg" x1="5" y1="0" x2="19" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FF4FC1"/><stop offset=".5" stop-color="#9D7BFF"/><stop offset="1" stop-color="#3BE3FF"/></linearGradient></defs><path d="M12 19V5.5M6.5 10.5 12 5l5.5 5.5" fill="none" stroke="url(#nmg)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function notifCardHTML(pl) {
+  const m = notifMode();
+  if (m === 'on') return '<p class="notif-line">🔔 Rappels activés : une notif 5 min avant chaque moment.</p>';
+  if (m === 'denied') return '<p class="notif-line">🔕 Notifications bloquées. Pour les activer : Réglages › Notifications › LVL UP.</p>';
+  if (m === 'install') return '<p class="notif-line">🔔 Pour recevoir les rappels, ajoute LVL UP à l’écran d’accueil (Partager › Sur l’écran d’accueil), puis ouvre-la depuis l’icône.</p>';
+  if (m === 'none') return '<p class="notif-line">🔔 Les rappels s’affichent 5 min avant, quand LVL UP est ouverte.</p>';
+  if (NOTIF.later === today()) return '';
+  const ex = pl && pl.items.find((it, i) => it.notify && i >= Math.max(0, nextIdx(pl))) || { e: '🍪', n: 'Goûter', s: 'Le repas clé pour faire du muscle : pain, fromage, lait, fruit' };
+  return `<div class="notif-card">
+      <div class="nh"><span class="bell">🔔</span><div><b>Active les rappels</b><p>LVL UP te prévient 5 min avant chaque moment de ta journée, même quand l’app est fermée.</p></div></div>
+      <div class="nmock" aria-hidden="true"><span class="nm-ic">${NM_ICON}</span><div class="nm-tx"><div class="nm-h"><span>LVL UP</span><span>maintenant</span></div><b>${ex.e} ${esc(ex.n)} dans 5 min</b><span>${esc(ex.s)}</span></div></div>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-act="notif-later">Plus tard</button><button class="btn btn-primary" data-act="notif-on">Activer</button></div>
+    </div>`;
+}
+function notifSettingsRow() {
+  const m = notifMode();
+  if (m === 'none') return '';
+  const sub = { on: '5 min avant chaque moment du programme', off: 'Désactivées', denied: 'Bloquées : Réglages › Notifications › LVL UP', install: 'Ajoute d’abord LVL UP à l’écran d’accueil' }[m];
+  return `<div class="row" style="cursor:default"><span class="ic">🔔</span><span class="tx"><b>Rappels du programme</b><span>${sub}</span></span>${m === 'on' || m === 'off' ? `<button class="toggle ${m === 'on' ? 'on' : ''}" data-act="notif-toggle" aria-pressed="${m === 'on'}" aria-label="Rappels"></button>` : ''}</div>`;
+}
+function refreshNotifUI() {
+  const pl = planFor(today());
+  $$('.notif-slot').forEach(el => { el.innerHTML = notifCardHTML(pl); });
+  $$('.notif-row').forEach(el => { el.innerHTML = notifSettingsRow(); });
+  if (SHEET && SHEET.opts.kind === 'plan' && pl) { const tl = $('.sheet .plan-tl'); if (tl) tl.innerHTML = planRows(pl); }
+  if (UI.tab === 'accueil') render();
+}
+async function enableNotifs() {
+  const m = notifMode();
+  if (m === 'install') return toast('Ajoute d’abord LVL UP à l’écran d’accueil', 'Partager › Sur l’écran d’accueil');
+  if (m === 'none') return;
+  let perm = 'default';
+  try { perm = await Notification.requestPermission(); } catch (e) { perm = 'default'; }
+  if (perm !== 'granted') {
+    NOTIF.on = false; saveNotif(); refreshNotifUI();
+    return perm === 'denied' ? toast('Notifications refusées', 'Réglages › Notifications › LVL UP pour changer d’avis') : toast('Pas de souci', 'Tu pourras les activer dans les réglages');
+  }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(PUSH_CFG.key) });
+    NOTIF.device = NOTIF.device || newId(); NOTIF.on = true; saveNotif();
+    await pushApi('test', { sub: sub.toJSON() });
+    toast('🔔 Rappels activés', 'Une notif de test arrive');
+    syncReminders(true);
+  } catch (e) {
+    NOTIF.on = false; saveNotif();
+    toast('Impossible d’activer les rappels', 'Vérifie ta connexion internet et réessaie');
+  }
+  refreshNotifUI();
+}
+async function disableNotifs() {
+  NOTIF.on = false; saveNotif();
+  try {
+    await pushApi('clear', {});
+    const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+    if (sub) await sub.unsubscribe();
+  } catch (e) { /* le serveur supprime aussi les abonnements expirés */ }
+  toast('Rappels désactivés');
+  refreshNotifUI();
+}
+function remindersFor(key) {
+  const pl = planFor(key), list = [], now = Date.now();
+  if (pl) pl.items.forEach(it => {
+    const at = epochOf(key, it.t - 5);
+    if (it.notify && at > now + 20000) list.push({ at, title: `${it.e} ${it.n} dans 5 min`, body: it.s, tag: `lvlup-${key}-${it.t}` });
+  });
+  list.push({ at: epochOf(addDays(key, 1), (pl ? pl.N : 480) + 5), title: '☀️ Bonjour !', body: 'Ouvre LVL UP : une minute pour préparer ta journée', tag: 'lvlup-bonjour' });
+  return list.slice(0, 40);
+}
+let remT = null;
+function syncReminders(now) {
+  if (notifMode() !== 'on') return;
+  clearTimeout(remT);
+  remT = setTimeout(async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+      if (!sub) { NOTIF.on = false; saveNotif(); return; }
+      await pushApi('schedule', { sub: sub.toJSON(), reminders: remindersFor(today()) });
+      NOTIF.synced = today();
+    } catch (e) { NOTIF.synced = ''; }
+    saveNotif();
+  }, now ? 0 : 1500);
+}
+// Toutes les 20 s : comptes à rebours, passage au moment suivant, rappel dans l'app ouverte
+function remTick() {
+  const key = today(), n = nowMin(), pl = planFor(key);
+  $$('[data-rel]').forEach(el => { el.textContent = relTxt(+el.dataset.rel, +el.dataset.end || 0); });
+  if (!pl) return;
+  const nk = key + nextIdx(pl, n);
+  if (UI.nextKey !== null && UI.nextKey !== nk && UI.tab === 'accueil' && !SHEET && !P.on && !G.on) render();
+  if (notifMode() === 'on' || P.on) return;
+  pl.items.forEach(it => {
+    const k = key + it.t + it.n;
+    if (it.notify && n >= it.t - 5 && n < it.t - 2 && !UI.remShown[k]) {
+      UI.remShown[k] = 1;
+      toast(`${it.e} ${it.n} dans 5 min`, it.s);
+      ensureAudio(); beep(988, 0.12); beep(1319, 0.18, 0.14);
+    }
+  });
+}
+
+// Démarrage : accueil, programme du jour, puis pesée du jour, puis taille toutes les deux semaines
 function runPrompts() {
   if (SHEET || P.on || G.on) return;
-  const t = today();
+  const t = today(), h = new Date().getHours();
   if (!S.onboarded) return openWelcome();
+  if (h >= 5 && h < 21 && !S.days[t] && S.asked.b !== t) return openBonjour(true);
   if (!S.weights.some(e => e.d === t) && S.asked.w !== t) return openWeigh(true);
   const lh = lastH();
   const dueH = !lh || daysBetween(lh.d, t) >= 14;
@@ -1582,6 +2185,7 @@ function saveWelcome() {
   addXP(20, 'Bienvenue !');
   confetti(140);
   checkBadges(); persist(); render(true);
+  setTimeout(runPrompts, 1800);
 }
 
 function openLevelUp(lv) {
@@ -1636,6 +2240,7 @@ function settingsHTML() {
     <label class="field"><span>Pseudo</span><input id="set-name" maxlength="20" autocomplete="nickname" value="${esc(S.profile.name)}"></label>
     <label class="field"><span>Date de naissance</span><input id="set-birth" type="date" value="${esc(S.profile.birth)}"></label>
     <div class="row" style="cursor:default"><span class="ic">🔊</span><span class="tx"><b>Sons pendant les séances</b><span>Bips de décompte et de changement</span></span><button class="toggle ${S.profile.sound ? 'on' : ''}" data-act="sound" aria-pressed="${S.profile.sound}" aria-label="Sons"></button></div>
+    ${notifMode() === 'none' ? '' : `<div class="notif-row">${notifSettingsRow()}</div>`}
     <div class="row" style="cursor:default"><span class="ic">${Sync.ref ? '☁️' : '📱'}</span><span class="tx"><b>${Sync.ref ? 'Sauvegardé sur ton compte' : 'Sauvegardé sur cet appareil'}</b><span>${Sync.ref ? 'Tu retrouves tes données sur tous tes appareils.' : 'Pense à copier tes données de temps en temps.'}</span></span></div>
     <div class="sheet-actions"><button class="btn btn-ghost" data-act="copy">Copier mes données</button><button class="btn btn-ghost" data-act="imp-open">Importer</button></div>
     <div id="imp" hidden><label class="field"><span>Colle ici tes données copiées</span><textarea id="imp-txt" spellcheck="false"></textarea></label><button class="btn btn-ghost btn-block" data-act="import" style="margin-top:10px">Remplacer mes données</button></div>
@@ -1767,7 +2372,7 @@ function finishWorkout() {
   P.levelUp = after > before ? after : null;
   P.result = { min, xp, count: exCount() };
   P.mode = 'done';
-  checkBadges(); persist();
+  checkBadges(); persist(); syncReminders();
   renderPlayer(); confetti(160); fanfare(); releaseWake();
 }
 function closePlayer() {
@@ -1988,6 +2593,26 @@ const ACT = {
   'w-skip'() { S.asked.w = today(); persist(); closeSheet(); },
   'h-save'() { saveHeight(); },
   'h-later'() { closeSheet(); },
+  plan() { openPlan(); },
+  'bj-open'() { openBonjour(false); },
+  'bj-later'() { S.asked.b = today(); persist(); closeSheet(); },
+  'bj-next'() { if (bjValid()) bjShow(BJ.step + 1, 'fwd'); },
+  'bj-back'() { bjShow(BJ.step - 1, 'back'); },
+  'bj-calc'() { if (bjValid()) saveBonjour(); },
+  'bj-done'() { closeSheet(); confetti(70); },
+  'bj-add'(k) {
+    const T = ACT_TYPES[k], a = { k };
+    if (k === 'food') { const n = nowMin(); a.meal = n < 600 ? 'dej' : n < 900 ? 'gouter' : 'diner'; a.from = MEALS[a.meal][1]; a.place = ''; }
+    else { a.from = T.from; a.to = k === 'school' && new Date().getDay() === 3 ? '12:00' : T.to; a.what = ''; }
+    BJ.d.acts.push(a); bjRefresh();
+    const cards = $$('#bj .act'); if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  },
+  'bj-del'(i) { BJ.d.acts.splice(+i, 1); bjRefresh(); },
+  'bj-meal'(arg) { const [i, m] = arg.split('|'), a = BJ.d.acts[+i]; a.meal = m; a.from = MEALS[m][1]; bjRefresh(); },
+  'bj-pick'(arg) { const [i, f, v] = arg.split('|'); BJ.d.acts[+i][f] = v; bjRefresh(); },
+  'notif-on'() { enableNotifs(); },
+  'notif-later'() { NOTIF.later = today(); saveNotif(); refreshNotifUI(); },
+  'notif-toggle'(_, el) { el.classList.toggle('on'); if (notifMode() === 'on') disableNotifs(); else enableNotifs(); },
   range(a) { UI.wRange = +a; render(); },
   histall() { UI.histAll = !UI.histAll; render(); },
   del(a) {
@@ -2051,6 +2676,19 @@ document.addEventListener('click', e => {
   if (fn) fn(el.dataset.arg, el, e);
 });
 document.addEventListener('input', e => {
+  const bj = e.target.dataset && e.target.dataset.bj;
+  if (bj && BJ.d) {
+    const [k, i, f] = bj.split('.'), v = e.target.value.slice(0, 30);
+    if (k === 'acts') {
+      BJ.d.acts[+i][f] = v;
+      $$(`#bj [data-act="bj-pick"][data-arg^="${i}|${f}|"]`).forEach(c => c.classList.toggle('on', c.dataset.arg.split('|')[2] === v));
+    } else {
+      BJ.d[k] = v;
+      const box = $('#bj-sleep');
+      if (box && (k === 'wake' || k === 'sleep')) box.innerHTML = sleepCardHTML();
+    }
+    return;
+  }
   if (e.target.id === 'est-f' || e.target.id === 'est-m') {
     S.profile.par[e.target.id === 'est-f' ? 'f' : 'm'] = e.target.value.slice(0, 6);
     $('#est-r').innerHTML = estResult();
@@ -2062,6 +2700,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   if (P.on && P.mode !== 'done') requestWake();
   if (lastRenderDay !== today() && !P.on && !G.on) render();
+  remTick();
+  if (NOTIF.synced !== today()) syncReminders();
   refreshRemote().finally(() => setTimeout(runPrompts, 300));
 });
 
@@ -2084,6 +2724,8 @@ function touchIcon() {
 /* ============ démarrage ============ */
 render(true);
 touchIcon();
+setInterval(remTick, 20000);
+if (NOTIF.synced !== today()) syncReminders();
 Promise.race([initRemote(), new Promise(r => setTimeout(r, 2500))]).then(() => setTimeout(runPrompts, 350));
 })();
 </script>
